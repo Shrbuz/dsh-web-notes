@@ -53,10 +53,24 @@ dsh plugin --profile web add link:/path/to/dsh-web-notes
 
 ```sh
 dsh plugin --profile web list          # 应能看到 dsh-web-notes
-npm view dsh-web-notes version         # → 0.7.0
+npm view dsh-web-notes version         # → 0.7.2
 ```
 
 重启 dsh web 后，聊天窗口右侧会出现笔记本图标（见[使用](#使用)）。
+
+### 更新
+
+`dsh plugin` 只是转发给 pnpm，所以更新就是 pnpm 的 `update`——无需手动改 manifest（profile 会在下一次 `dsh plugin` 运行时按已安装状态自动对账 bundle 清单），然后重启 dsh web：
+
+```sh
+dsh plugin --profile web update dsh-web-notes
+# 或指定精确版本：
+dsh plugin --profile web add dsh-web-notes@0.7.2 --registry https://registry.npmjs.org/
+```
+
+> **镜像同步延迟**：发布是发到官方源的，而 npmmirror 等镜像同步有延迟——刚发布后你的默认源可能还是旧版本（甚至短暂 404）。如果新版本发布后 update「没反应」，加上 `--registry https://registry.npmjs.org/` 直连官方源即可。
+
+> 更新不会动你的笔记：数据存在宿主机 `$DSH_HOME/notes/notes.json`，设置也会保留。
 
 ## 使用
 

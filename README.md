@@ -53,10 +53,24 @@ Then add the bundle to the profile manifest so it actually boots:
 
 ```sh
 dsh plugin --profile web list          # dsh-web-notes should be installed
-npm view dsh-web-notes version         # → 0.7.0
+npm view dsh-web-notes version         # → 0.7.2
 ```
 
 After restarting dsh web, the notebook icon appears on the right edge of the chat window (see [Usage](#usage)).
+
+### Update
+
+`dsh plugin` forwards to pnpm, so updating is just pnpm's `update` — no manifest edits needed (the profile reconciles its bundle list against what is installed on the next `dsh plugin` run), then restart dsh web:
+
+```sh
+dsh plugin --profile web update dsh-web-notes
+# or pin an exact version:
+dsh plugin --profile web add dsh-web-notes@0.7.2 --registry https://registry.npmjs.org/
+```
+
+> **Mirror sync delay**: publishing goes to the official registry, but mirrors like npmmirror sync on a delay — right after a release your default registry may still serve the previous version (or briefly 404). If an update "does nothing" after a new release, point at the official registry with `--registry https://registry.npmjs.org/`.
+
+> Updates never touch your notes: they live on the host at `$DSH_HOME/notes/notes.json` and your settings survive an upgrade.
 
 ## Usage
 
