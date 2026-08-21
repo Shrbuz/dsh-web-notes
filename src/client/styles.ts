@@ -11,34 +11,57 @@
  */
 
 export const NOTES_CSS = `
-.dshn-root {
-  /* Official semantic tokens → local aliases (fallback = original palette).
-     The tokens resolve from the active theme/skin at runtime. */
-  --dshn-bg-1: var(--dsw-alias-bg-layer-1, #131c36);
-  --dshn-bg-2: var(--dsw-alias-bg-layer-2, #070b1a);
-  --dshn-bg-3: var(--dsw-alias-bg-layer-3, #1b2653);
-  --dshn-bg-base: var(--dsw-alias-bg-base, #0b1124);
-  --dshn-bg-hover: var(--dsw-alias-interactive-bg-hover, rgba(126, 152, 255, 0.12));
-  --dshn-text-1: var(--dsw-alias-label-primary, #eef2ff);
-  --dshn-text-2: var(--dsw-alias-label-secondary, #93a1c8);
-  --dshn-text-3: var(--dsw-alias-label-tertiary, #64749f);
-  --dshn-text-dim: var(--dsw-alias-label-caption, #5b6a99);
-  --dshn-border: var(--dsw-alias-border-l2, rgba(126, 152, 255, 0.3));
-  --dshn-border-strong: var(--dsw-alias-border-l3, rgba(126, 152, 255, 0.5));
-  --dshn-primary: var(--dsw-alias-button-primary-fill, #4a68f5);
-  --dshn-primary-hover: var(--dsw-alias-button-primary-hover, #3a55e0);
-  --dshn-primary-contrast: var(--dsw-alias-label-primary-inverted, #fff);
-  --dshn-accent: var(--dsw-alias-button-contrast-fill, #8ea6ff);
-  --dshn-danger: var(--dsw-alias-state-error-primary, #ef4444);
-  --dshn-success: var(--dsw-alias-state-success-primary, #22c55e);
+/* Design tokens on body (NOT :root): the official --dsw-* tokens are
+   defined on <body> (light values on body, dark values redefined on
+   body[data-ds-dark-theme]). CSS custom properties inherit down the tree,
+   so --dshn-* must be declared on body too — declaring them on :root would
+   resolve var(--dsw-*) at the html level where the dsw tokens do not exist,
+   silently falling back to the light defaults and never following dark
+   themes or skins. body scope also covers the settings card, which lives in
+   the official settings dialog outside .dshn-root. */
+body {
+  --dshn-bg-1: var(--dsw-alias-bg-layer-1, #ffffff);
+  --dshn-bg-2: var(--dsw-alias-bg-layer-2, #ffffff);
+  --dshn-bg-base: var(--dsw-alias-bg-base, #ffffff);
+  --dshn-bg-overlay: var(--dsw-alias-bg-overlay, #e9ecf2);
+  --dshn-bg-hover: var(--dsw-alias-interactive-bg-hover, rgba(38, 49, 72, 0.06));
+  --dshn-bg-active: var(--dsw-alias-interactive-bg-active, rgba(38, 49, 72, 0.1));
+  --dshn-text-1: var(--dsw-alias-label-primary, #0f1115);
+  --dshn-text-2: var(--dsw-alias-label-secondary, #61666b);
+  --dshn-text-3: var(--dsw-alias-label-tertiary, #81858c);
+  --dshn-text-dim: var(--dsw-alias-label-caption, #adb2b8);
+  --dshn-border: var(--dsw-alias-border-l2, rgba(0, 0, 0, 0.1));
+  --dshn-border-strong: var(--dsw-alias-border-l3, rgba(0, 0, 0, 0.12));
+  --dshn-border-lite: var(--dsw-alias-border-l1, rgba(0, 0, 0, 0.04));
+  --dshn-primary: var(--dsw-alias-state-business-primary, #4176e6);
+  --dshn-primary-hover: var(--dsw-alias-state-business-primary, #4176e6);
+  --dshn-primary-weak: var(--dsw-alias-state-business-weak, rgba(65, 118, 230, 0.12));
+  /* Button label color: the OFFICIAL primary-button foreground. Follows the
+     theme (dark buttons get light text; in dark themes the button flips to
+     a light fill with dark text — hardcoding white here caused white-on-white). */
+  --dshn-primary-contrast: var(--dsw-alias-label-primary-foreground, #ffffff);
+  /* Settings-card surface: the OFFICIAL plugin cards use
+     label-primary-inverted as their background (white in light themes,
+     #353638 neutral grey in dark) — NOT bg-layer-1, which is darker. */
+  --dshn-card-bg: var(--dsw-alias-label-primary-inverted, #ffffff);
+  --dshn-accent: var(--dsw-alias-state-business-primary, #4176e6);
+  --dshn-btn-fill: var(--dsw-alias-button-primary-fill, #0f1115);
+  --dshn-btn-hover: var(--dsw-alias-button-primary-hover, #43454a);
+  --dshn-neutral-500: var(--dsw-static-neutral-bluish-500, #979da6);
+  --dshn-neutral-600: var(--dsw-static-neutral-bluish-600, #81858c);
+  --dshn-neutral-700: var(--dsw-static-neutral-bluish-700, #61666b);
+  --dshn-danger: var(--dsw-alias-state-error-primary, #ec1313);
   --dshn-warn: var(--dsw-alias-state-warn-primary, #f59e0b);
-  --dshn-tooltip-bg: var(--dsw-alias-tooltip-bg, #131c36);
-  --dshn-code-bg: var(--dsw-alias-markdown-code-block, rgba(19, 28, 54, 0.5));
-  --dshn-scroll-thumb: var(--dsw-alias-scrollbar-bg-l2, rgba(126, 152, 255, 0.25));
-  --dshn-scroll-thumb-hover: var(--dsw-alias-scrollbar-hover-l2, rgba(126, 152, 255, 0.4));
-  --dshn-shadow: var(--dsw-shadow-lv3, 0 8px 24px rgba(2, 6, 23, 0.45));
-  --dshn-shadow-lite: var(--dsw-shadow-lv1, 0 2px 6px rgba(2, 6, 23, 0.35));
+  --dshn-tooltip-bg: var(--dsw-alias-tooltip-bg, #2c2c2e);
+  --dshn-bg-3: var(--dsw-alias-bg-overlay, #e9ecf2);
+  --dshn-code-bg: var(--dsw-alias-markdown-inline-code, #ebeef2);
+  --dshn-scroll-thumb: var(--dsw-static-neutral-bluish-500, rgba(0, 0, 0, 0.25));
+  --dshn-scroll-thumb-hover: var(--dsw-static-neutral-bluish-600, rgba(0, 0, 0, 0.4));
+  --dshn-shadow: var(--dsw-shadow-lv3, 0 12px 32px rgba(0, 0, 0, 0.12));
+  --dshn-shadow-lite: var(--dsw-shadow-lv1, 0 2px 4px rgba(0, 0, 0, 0.05));
+}
 
+.dshn-root {
   position: fixed;
   top: 0;
   left: 0;
@@ -134,7 +157,10 @@ export const NOTES_CSS = `
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--dshn-primary) 60%, transparent);
 }
 
-/* Inner icon carrier: idle float + hover lift + press squish + shine sweep. */
+/* Inner icon carrier: idle float + hover lift + press squish + shine sweep.
+   overflow:hidden clips the shine sweep strictly inside the rounded button —
+   without it the gloss bar leaks past the container edge and reads as a
+   stray white strip next to the dock. */
 .dshn-dock-inner {
   position: relative;
   width: 100%;
@@ -143,6 +169,7 @@ export const NOTES_CSS = `
   align-items: center;
   justify-content: center;
   border-radius: inherit;
+  overflow: hidden;
   transition: transform 140ms ease, filter 140ms ease;
   pointer-events: none;
 }
@@ -194,20 +221,33 @@ export const NOTES_CSS = `
 .dshn-dock-inner::after {
   content: '';
   position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(120deg, transparent 32%, color-mix(in srgb, var(--dshn-primary-contrast) 18%, transparent) 50%, transparent 68%);
-  transform: translateX(-120%);
+  /* A full-height diagonal light STREAK — a WIDE band for a fuller sweep,
+     but square edges (no inherited radius) so it never reads as the button's
+     own rounded silhouette sliding across. */
+  top: -6%;
+  bottom: -6%;
+  left: 0;
+  width: 80%;
+  border-radius: 0;
+  /* White gloss streak — a moderate plateau of light with WIDE soft edges:
+     the bright core is narrow, and the fade-out on both sides is long, so
+     it reads as a diffused glow rather than a hard band. */
+  background: linear-gradient(105deg,
+    transparent 12%,
+    color-mix(in srgb, #ffffff 24%, transparent) 42%,
+    color-mix(in srgb, #ffffff 24%, transparent) 58%,
+    transparent 88%);
+  transform: translateX(-130%);
   pointer-events: none;
 }
 
 .dshn-dock:hover .dshn-dock-inner::after {
-  animation: dshn-dock-shine 0.9s ease;
+  animation: dshn-dock-shine 0.45s linear;
 }
 
 @keyframes dshn-dock-shine {
   to {
-    transform: translateX(120%);
+    transform: translateX(130%);
   }
 }
 
@@ -264,12 +304,9 @@ export const NOTES_CSS = `
   width: min(400px, calc(100vw - 24px));
   display: flex;
   flex-direction: column;
-  background: linear-gradient(170deg, var(--dshn-bg-1), var(--dshn-bg-2));
+  background: var(--dshn-bg-1);
   border-left: 1px solid var(--dshn-border);
-  box-shadow:
-    -12px 0 36px var(--dshn-shadow),
-    -2px 0 0 color-mix(in srgb, var(--dshn-primary) 12%, transparent);
-  backdrop-filter: blur(14px);
+  box-shadow: var(--dshn-shadow);
   color: var(--dshn-text-1);
   font-size: 13px;
   animation: dshn-panel-in 220ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -291,32 +328,41 @@ export const NOTES_CSS = `
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 14px 16px 10px;
-  border-bottom: 1px solid var(--dshn-border);
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--dshn-border-lite);
 }
 
 .dshn-panel-title {
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
   color: var(--dshn-text-1);
   flex: 1;
   min-width: 0;
 }
 
+.dshn-panel-title-icon {
+  color: var(--dshn-neutral-600);
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
 .dshn-panel-count {
   font-size: 11px;
   color: var(--dshn-text-2);
-  background: color-mix(in srgb, var(--dshn-primary) 12%, transparent);
-  border: 1px solid var(--dshn-border);
-  border-radius: 999px;
-  padding: 1px 8px;
+  background: var(--dshn-bg-overlay);
+  border-radius: 4px;
+  padding: 1px 7px;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .dshn-icon-btn {
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: 6px;
   background: transparent;
   color: var(--dshn-text-2);
   width: 28px;
@@ -326,7 +372,7 @@ export const NOTES_CSS = `
   justify-content: center;
   cursor: pointer;
   padding: 0;
-  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+  transition: background 120ms ease, color 120ms ease;
 }
 
 .dshn-icon-btn:hover {
@@ -336,7 +382,7 @@ export const NOTES_CSS = `
 
 .dshn-icon-btn:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--dshn-primary) 60%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--dshn-primary) 40%, transparent);
 }
 
 .dshn-toolbar {
@@ -348,53 +394,55 @@ export const NOTES_CSS = `
 .dshn-search {
   flex: 1;
   min-width: 0;
-  border: 1px solid var(--dshn-border);
-  border-radius: 8px;
-  background: var(--dshn-bg-base);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: var(--dshn-bg-overlay);
   color: var(--dshn-text-1);
   font-size: 12px;
   padding: 6px 10px;
   outline: none;
-  transition: border-color 120ms ease, box-shadow 120ms ease;
+  transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.dshn-search:hover {
+  background: color-mix(in srgb, var(--dshn-bg-overlay) 80%, var(--dshn-bg-hover));
+}
+
+.dshn-search:focus {
+  background: var(--dshn-bg-1);
+  border-color: var(--dshn-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--dshn-primary) 25%, transparent);
 }
 
 .dshn-search::placeholder {
   color: var(--dshn-text-dim);
 }
 
-.dshn-search:focus {
-  border-color: var(--dshn-primary);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--dshn-primary) 35%, transparent);
-}
-
 .dshn-new-btn {
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 0 14px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   color: var(--dshn-primary-contrast);
-  background: var(--dshn-primary);
-  box-shadow: var(--dshn-shadow-lite);
+  background: var(--dshn-btn-fill);
   white-space: nowrap;
-  transition: filter 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+  transition: background 120ms ease, transform 90ms ease;
 }
 
 .dshn-new-btn:hover {
-  background: var(--dshn-primary-hover);
-  filter: brightness(1.08);
-  transform: translateY(-1px);
+  background: var(--dshn-btn-hover);
 }
 
 .dshn-new-btn:active {
-  filter: brightness(0.94);
-  transform: translateY(0);
+  transform: scale(0.97);
+  transition-duration: 40ms;
 }
 
 .dshn-new-btn:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--dshn-primary) 60%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--dshn-primary) 40%, transparent);
 }
 
 /* ---- scope tabs (all / this session / global) ---- */
@@ -406,16 +454,16 @@ export const NOTES_CSS = `
 
 .dshn-scope {
   flex: 1;
-  border: 1px solid var(--dshn-border);
-  border-radius: 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
   background: transparent;
   color: var(--dshn-text-2);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
   padding: 4px 8px;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+  transition: background 120ms ease, color 120ms ease;
 }
 
 .dshn-scope:hover {
@@ -424,14 +472,14 @@ export const NOTES_CSS = `
 }
 
 .dshn-scope-active {
-  background: color-mix(in srgb, var(--dshn-primary) 14%, transparent);
-  border-color: var(--dshn-primary);
-  color: var(--dshn-text-1);
+  background: var(--dshn-primary-weak);
+  color: var(--dshn-primary);
+  font-weight: 600;
 }
 
 .dshn-scope:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--dshn-primary) 60%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--dshn-primary) 40%, transparent);
 }
 
 .dshn-scopes-muted {
@@ -442,12 +490,13 @@ export const NOTES_CSS = `
 
 /* ---- session-scope tag on list items ---- */
 .dshn-scope-tag {
-  color: var(--dshn-accent);
+  color: var(--dshn-primary);
+  background: var(--dshn-primary-weak);
 }
 
 .dshn-scope-tag-global {
-  color: var(--dshn-text-3);
-  background: color-mix(in srgb, var(--dshn-text-3) 14%, transparent);
+  color: var(--dshn-neutral-600);
+  background: var(--dshn-bg-overlay);
 }
 
 /* ---- editor "save to global" checkbox ---- */
@@ -493,18 +542,57 @@ export const NOTES_CSS = `
 }
 
 .dshn-item {
-  border: 1px solid var(--dshn-border);
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--dshn-bg-base) 55%, transparent);
-  padding: 10px 12px;
+  border: 1px solid var(--dshn-border-lite);
+  border-radius: 8px;
+  background: var(--dshn-bg-1);
+  padding: 10px 12px 10px 16px;
   cursor: pointer;
-  transition: border-color 120ms ease, background 120ms ease;
+  transition: border-color 120ms ease, background 120ms ease, box-shadow 140ms ease, transform 90ms ease;
   position: relative;
 }
 
+/* Semantic rail — a slim 2px accent line on the item's left edge,
+   uniformly the official business blue (global and session alike).
+   The rail is subtle at rest and grows into a short rounded bar on
+   hover, echoing the app's interactive accents. */
+.dshn-item::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 0;
+  width: 2px;
+  border-radius: 0 2px 2px 0;
+  background: var(--dshn-neutral-600);
+  opacity: 0.45;
+  transition: top 140ms ease, bottom 140ms ease, background 140ms ease, opacity 140ms ease;
+}
+
+.dshn-item-global::before,
+.dshn-item-session::before {
+  background: var(--dshn-primary);
+  opacity: 0.8;
+}
+
 .dshn-item:hover {
-  border-color: var(--dshn-border-strong);
-  background: var(--dshn-bg-hover);
+  border-color: var(--dshn-border);
+  background: var(--dshn-bg-overlay);
+}
+
+.dshn-item:hover::before {
+  top: 8px;
+  bottom: 8px;
+  opacity: 1;
+}
+
+.dshn-item:active {
+  transform: scale(0.99);
+  transition-duration: 40ms;
+}
+
+.dshn-item:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--dshn-primary) 35%, transparent);
 }
 
 .dshn-item-title {
@@ -538,6 +626,14 @@ export const NOTES_CSS = `
   color: var(--dshn-text-3);
 }
 
+/* Relative time pushed to the right for a quieter, more organized rhythm. */
+.dshn-item-time {
+  margin-left: auto;
+  color: var(--dshn-text-dim);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 .dshn-item-tags {
   display: flex;
   flex-wrap: wrap;
@@ -547,61 +643,80 @@ export const NOTES_CSS = `
 
 .dshn-tag {
   font-size: 10px;
-  color: var(--dshn-accent);
-  background: color-mix(in srgb, var(--dshn-primary) 14%, transparent);
-  border: 1px solid var(--dshn-border);
-  border-radius: 999px;
-  padding: 1px 7px;
+  color: var(--dshn-text-2);
+  background: var(--dshn-bg-overlay);
+  border: none;
+  border-radius: 4px;
+  padding: 1px 6px;
   white-space: nowrap;
 }
 
 .dshn-source-tag {
-  border-style: dashed;
-  opacity: 0.9;
+  color: var(--dshn-neutral-600);
 }
 
-/* hover actions */
+/* hover actions — horizontal icon+label pills on the item's top-right.
+   Opaque backgrounds + z-index keep the note title from bleeding through. */
 .dshn-item-actions {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  display: none;
+  top: 6px;
+  right: 6px;
+  display: flex;
   gap: 4px;
+  opacity: 0;
+  transform: translateY(-3px);
+  transition: opacity 120ms ease, transform 120ms ease;
+  z-index: 2;
 }
 
 .dshn-item:hover .dshn-item-actions,
 .dshn-item:focus-within .dshn-item-actions {
-  display: inline-flex;
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .dshn-action {
-  border: 1px solid var(--dshn-border-strong);
-  border-radius: 7px;
-  background: var(--dshn-bg-2);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--dshn-border);
+  border-radius: 6px;
+  background: var(--dshn-bg-1);
   color: var(--dshn-text-2);
   font-size: 11px;
-  font-weight: 600;
-  padding: 3px 8px;
+  font-weight: 500;
+  padding: 2px 8px;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+  box-shadow: var(--dshn-shadow-lite);
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease, box-shadow 120ms ease, transform 90ms ease;
+}
+
+.dshn-action svg {
+  flex-shrink: 0;
 }
 
 .dshn-action:hover {
-  background: color-mix(in srgb, var(--dshn-primary) 35%, transparent);
-  color: var(--dshn-primary-contrast);
-  border-color: var(--dshn-primary);
+  background: var(--dshn-bg-1);
+  color: var(--dshn-primary);
+  border-color: color-mix(in srgb, var(--dshn-primary) 40%, transparent);
+  box-shadow: var(--dshn-shadow);
+}
+
+.dshn-action:active {
+  transform: scale(0.95);
+  transition-duration: 40ms;
 }
 
 .dshn-action-danger:hover {
-  background: color-mix(in srgb, var(--dshn-danger) 30%, transparent);
-  border-color: color-mix(in srgb, var(--dshn-danger) 70%, transparent);
+  background: color-mix(in srgb, var(--dshn-danger) 10%, transparent);
+  border-color: color-mix(in srgb, var(--dshn-danger) 30%, transparent);
   color: var(--dshn-danger);
 }
 
 .dshn-action:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--dshn-primary) 60%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--dshn-primary) 40%, transparent);
 }
 
 /* ---- editor ---- */
@@ -622,7 +737,7 @@ export const NOTES_CSS = `
 
 .dshn-editor-back {
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: 6px;
   background: transparent;
   color: var(--dshn-text-2);
   width: 28px;
@@ -651,11 +766,11 @@ export const NOTES_CSS = `
   width: 100%;
   box-sizing: border-box;
   border: 1px solid var(--dshn-border);
-  border-radius: 8px;
-  background: var(--dshn-bg-base);
+  border-radius: 6px;
+  background: var(--dshn-bg-1);
   color: var(--dshn-text-1);
   font-size: 13px;
-  padding: 8px 10px;
+  padding: 7px 10px;
   outline: none;
   transition: border-color 120ms ease, box-shadow 120ms ease;
 }
@@ -666,7 +781,7 @@ export const NOTES_CSS = `
 
 .dshn-input:focus {
   border-color: var(--dshn-primary);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--dshn-primary) 35%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--dshn-primary) 25%, transparent);
 }
 
 .dshn-textarea {
@@ -680,21 +795,21 @@ export const NOTES_CSS = `
 /* ---- Markdown preview/edit toggle + preview pane ---- */
 .dshn-md-toggle {
   display: inline-flex;
-  gap: 4px;
+  gap: 2px;
   padding: 2px;
-  border: 1px solid var(--dshn-border);
-  border-radius: 8px;
-  background: var(--dshn-bg-2);
+  border: 1px solid var(--dshn-border-lite);
+  border-radius: 6px;
+  background: var(--dshn-bg-overlay);
   align-self: flex-start;
 }
 
 .dshn-md-btn {
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   background: transparent;
   color: var(--dshn-text-3);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   padding: 3px 12px;
   cursor: pointer;
   transition: background 120ms ease, color 120ms ease;
@@ -705,8 +820,10 @@ export const NOTES_CSS = `
 }
 
 .dshn-md-btn-active {
-  background: color-mix(in srgb, var(--dshn-primary) 18%, transparent);
+  background: var(--dshn-bg-1);
   color: var(--dshn-text-1);
+  font-weight: 600;
+  box-shadow: var(--dshn-shadow-lite);
 }
 
 .dshn-md-btn:focus-visible {
@@ -874,13 +991,13 @@ export const NOTES_CSS = `
 }
 
 .dshn-btn {
-  border: 1px solid var(--dshn-border-strong);
-  border-radius: 8px;
+  border: 1px solid var(--dshn-border);
+  border-radius: 6px;
   background: transparent;
   color: var(--dshn-text-2);
   font-size: 12px;
-  font-weight: 600;
-  padding: 7px 16px;
+  font-weight: 500;
+  padding: 6px 14px;
   cursor: pointer;
   transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
 }
@@ -898,38 +1015,39 @@ export const NOTES_CSS = `
 .dshn-btn-primary {
   border: none;
   color: var(--dshn-primary-contrast);
-  background: var(--dshn-primary);
-  box-shadow: var(--dshn-shadow-lite);
+  background: var(--dshn-btn-fill);
 }
 
 .dshn-btn-primary:hover {
-  background: var(--dshn-primary-hover);
+  background: var(--dshn-btn-hover);
   color: var(--dshn-primary-contrast);
 }
 
 .dshn-btn-danger {
   color: var(--dshn-danger);
-  border-color: color-mix(in srgb, var(--dshn-danger) 40%, transparent);
+  border-color: color-mix(in srgb, var(--dshn-danger) 25%, transparent);
 }
 
 .dshn-btn-danger:hover {
-  background: color-mix(in srgb, var(--dshn-danger) 20%, transparent);
+  background: color-mix(in srgb, var(--dshn-danger) 8%, transparent);
   color: var(--dshn-danger);
 }
 
 .dshn-btn:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--dshn-primary) 60%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--dshn-primary) 40%, transparent);
 }
 
 /* ---- states ---- */
 .dshn-empty {
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 6px;
   padding: 24px;
   text-align: center;
   color: var(--dshn-text-3);
@@ -937,8 +1055,60 @@ export const NOTES_CSS = `
   line-height: 1.6;
 }
 
-.dshn-empty-icon {
-  opacity: 0.5;
+/* Illustrated empty-state guide. */
+.dshn-empty-art {
+  margin-bottom: 8px;
+  animation: dshn-empty-float 3.2s ease-in-out infinite;
+  filter: drop-shadow(0 6px 14px color-mix(in srgb, var(--dshn-primary) 18%, transparent));
+}
+
+@keyframes dshn-empty-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.dshn-empty-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--dshn-text-1);
+  letter-spacing: 0.01em;
+}
+
+.dshn-empty-hint {
+  max-width: 260px;
+  color: var(--dshn-text-2);
+  font-size: 12px;
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+.dshn-empty-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--dshn-primary-contrast);
+  background: var(--dshn-btn-fill);
+  transition: background 120ms ease, transform 90ms ease;
+}
+
+.dshn-empty-new:hover {
+  background: var(--dshn-btn-hover);
+}
+
+.dshn-empty-new:active {
+  transform: scale(0.96);
+  transition-duration: 40ms;
+}
+
+.dshn-empty-new:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--dshn-primary) 40%, transparent);
 }
 
 .dshn-loading,
@@ -956,6 +1126,51 @@ export const NOTES_CSS = `
   color: var(--dshn-danger);
 }
 
+/* ---- footer: star prompt with GitHub / CNB links ---- */
+.dshn-footer {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px 12px;
+  border-top: 1px solid var(--dshn-border-lite);
+}
+
+.dshn-footer-text {
+  font-size: 11px;
+  color: var(--dshn-text-3);
+  line-height: 1.5;
+  text-align: center;
+}
+
+.dshn-footer-links {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.dshn-footer-link {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--dshn-primary);
+  text-decoration: none;
+  padding: 3px 12px;
+  border: 1px solid var(--dshn-border);
+  border-radius: 999px;
+  background: var(--dshn-bg-overlay);
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.dshn-footer-link:hover {
+  background: var(--dshn-primary-weak);
+  border-color: color-mix(in srgb, var(--dshn-primary) 40%, transparent);
+}
+
+.dshn-footer-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--dshn-primary) 40%, transparent);
+}
+
 /* ---- toast ---- */
 .dshn-toast {
   position: absolute;
@@ -963,12 +1178,11 @@ export const NOTES_CSS = `
   bottom: 18px;
   transform: translateX(-50%);
   padding: 7px 14px;
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--dshn-primary-contrast);
   background: var(--dshn-tooltip-bg);
-  border: 1px solid var(--dshn-border-strong);
   box-shadow: var(--dshn-shadow);
   animation: dshn-toast-in 180ms ease-out;
   white-space: nowrap;
@@ -1032,24 +1246,48 @@ export const NOTES_CSS = `
   }
 }
 
-/* ---- settings card (设置 → 插件 → 插件配置) ---- */
+/* ---- settings card (设置 → 插件 → 插件配置) ----
+   Mirrors the official plugin-card pattern: a collapsible header row with a
+   rotating chevron, expanding into the form. */
 .dshn-settings-card {
-  border: 1px solid var(--dshn-border);
-  background: var(--dshn-bg-3);
+  border: 1px solid var(--dshn-border-lite);
+  background: var(--dshn-card-bg);
   border-radius: 12px;
   list-style: none;
-  transition: border-color 160ms ease, background 160ms ease;
+  transition: border-color 160ms ease;
 }
 
 .dshn-settings-card:hover {
-  border-color: var(--dshn-border-strong);
+  border-color: var(--dshn-border);
 }
 
-.dshn-settings-head {
+.dshn-settings-card-open {
+  border-color: var(--dshn-border);
+}
+
+/* Header: full-width button, name + description left, chevron right.
+   Padding mirrors the official card header (14px/16px) so the collapsed
+   height matches the built-in plugin cards exactly. */
+.dshn-settings-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+}
+
+.dshn-settings-headText {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 14px 16px 10px;
 }
 
 .dshn-settings-name {
@@ -1065,63 +1303,135 @@ export const NOTES_CSS = `
   line-height: 1.5;
 }
 
+.dshn-settings-chevron {
+  flex-shrink: 0;
+  color: var(--dshn-text-3);
+  transition: transform 180ms ease;
+}
+
+.dshn-settings-chevron-open {
+  transform: rotate(180deg);
+}
+
+/* Expanded body — mirrors the official card body: full-bleed fields with a
+   divider between them, bottom padding only (official: 0/0/8/0). */
 .dshn-settings-body {
-  border-top: 1px solid var(--dshn-border);
+  border-top: 1px solid var(--dshn-border-lite);
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin: 0 16px;
-  padding: 12px 0 14px;
+  padding: 0 0 8px;
 }
 
 .dshn-settings-field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+  padding: 12px 16px;
+}
+
+/* Divider between fields — matches the official card row divider
+   (1px solid border-l2, the 12% hairline), not the faintest l1. */
+.dshn-settings-field + .dshn-settings-field {
+  border-top: 1px solid var(--dshn-border);
 }
 
 .dshn-settings-label {
   color: var(--dshn-text-2);
   font-size: 12px;
+  font-weight: 500;
   line-height: 1.5;
 }
 
-.dshn-settings-label .dshn-check {
-  margin-right: 8px;
-  vertical-align: -2px;
-}
-
-.dshn-settings-control {
-  font: inherit;
-  color: var(--dshn-text-1);
-  background: var(--dshn-bg-base);
-  border: 1px solid var(--dshn-border);
-  border-radius: 8px;
-  padding: 6px 10px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: border-color 120ms ease, box-shadow 120ms ease;
-}
-
-.dshn-settings-control:hover {
-  border-color: var(--dshn-border-strong);
-}
-
-.dshn-settings-control:focus-visible {
-  outline: none;
-  border-color: var(--dshn-primary);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--dshn-primary) 35%, transparent);
-}
-
-.dshn-settings-hint {
-  color: var(--dshn-text-dim);
-  font-size: 11px;
-  line-height: 1.5;
-}
-
-.dshn-settings-check-row {
-  flex-direction: column;
+/* Segmented control — tab-style picker replacing the native select. */
+.dshn-settings-seg {
+  display: inline-flex;
   gap: 2px;
+  padding: 2px;
+  background: var(--dshn-bg-overlay);
+  border-radius: 6px;
+  align-self: flex-start;
+}
+
+.dshn-settings-seg-btn {
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--dshn-text-3);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 14px;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.dshn-settings-seg-btn:hover {
+  color: var(--dshn-text-1);
+}
+
+.dshn-settings-seg-active {
+  background: var(--dshn-bg-1);
+  color: var(--dshn-text-1);
+  font-weight: 600;
+  box-shadow: var(--dshn-shadow-lite);
+}
+
+.dshn-settings-seg-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--dshn-primary) 40%, transparent);
+}
+
+/* Switch row: label left, toggle right (aligned with official controls). */
+.dshn-settings-field-switch {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dshn-settings-switch {
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.dshn-settings-switch input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.dshn-settings-switch-track {
+  width: 32px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--dshn-neutral-500);
+  position: relative;
+  transition: background 140ms ease;
+}
+
+.dshn-settings-switch-track::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: transform 140ms ease;
+}
+
+.dshn-settings-switch input:checked + .dshn-settings-switch-track {
+  background: var(--dshn-primary);
+}
+
+.dshn-settings-switch input:checked + .dshn-settings-switch-track::after {
+  transform: translateX(14px);
+}
+
+.dshn-settings-switch input:focus-visible + .dshn-settings-switch-track {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--dshn-primary) 40%, transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {

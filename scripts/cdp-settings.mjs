@@ -179,13 +179,16 @@ const main = async () => {
   }
 
   // ---- default placement: floating + large (80 px) ----
-  check('dock defaults to floating + large', await evaluate(
+  // The dock animates in (scale/opacity), so wait for the size to settle.
+  check('dock defaults to floating + large', await waitFor(
     `(() => {
       const dock = document.querySelector('[data-dsh-part="notes-dock"]');
+      if (!dock) return false;
       const r = dock.getBoundingClientRect();
       return dock.getAttribute('data-mode') === 'floating' && dock.getAttribute('data-size') === 'large'
         && Math.round(r.width) === 80 && Math.round(r.height) === 80;
     })()`,
+    'dock-default-large',
   ))
 
   // ---- open the settings surface: sidebar-foot settings trigger → 插件 ----
@@ -206,11 +209,14 @@ const main = async () => {
     if (!opened) return false
     await sleep(1200)
     // The 插件 nav cell: the left-column button inside the settings dialog.
+    // Match BOTH locales — the app follows the document language, and
+    // headless Chrome defaults to en-US unless --lang is passed.
     const pluginNav = await evaluate(`(() => {
       const dialog = document.querySelector('[role="dialog"]');
       if (!dialog) return false;
+      const label = (b) => (b.innerText || '').trim();
       const cell = [...dialog.querySelectorAll('button')]
-        .find((b) => (b.innerText || '').trim() === '插件' && b.getBoundingClientRect().x < 250);
+        .find((b) => (label(b) === '插件' || label(b) === 'Plugins') && b.getBoundingClientRect().x < 250);
       if (!cell) return false;
       cell.click();
       return true;
@@ -225,29 +231,50 @@ const main = async () => {
     `document.querySelector('[data-dsh-part="notes-settings-card"]') !== null`,
     'notes-card',
   ))
+  // The card is collapsed by default (official pattern): the header shows the
+  // title + description; clicking it expands the form. React updates the
+  // aria-expanded asynchronously, so click first, then waitFor the state.
+  check('card collapses/expands via header', await evaluate(`(() => {
+    const card = document.querySelector('[data-dsh-part="notes-settings-card"]');
+    const header = card?.querySelector('.dshn-settings-header');
+    if (!card || !header) return false;
+    const collapsed = header.getAttribute('aria-expanded') === 'false'
+      && card.querySelector('.dshn-settings-body') === null;
+    header.click();
+    return collapsed;
+  })()`))
+  check('card expands after header click', await waitFor(
+    `(() => {
+      const card = document.querySelector('[data-dsh-part="notes-settings-card"]');
+      const header = card?.querySelector('.dshn-settings-header');
+      return header?.getAttribute('aria-expanded') === 'true'
+        && card?.querySelector('.dshn-settings-body') !== null;
+    })()`,
+    'card-expanded',
+  ))
   check('card shows 快捷入口/按钮大小/默认保存全局', await evaluate(
     `(() => {
       const text = document.querySelector('[data-dsh-part="notes-settings-card"]')?.innerText ?? '';
-      return text.includes('快捷入口') && text.includes('悬浮按钮大小') && text.includes('默认保存全局');
+      const zh = text.includes('快捷入口') && text.includes('悬浮按钮大小') && text.includes('默认保存全局');
+      const en = text.includes('Quick access') && text.includes('Floating button size') && text.includes('Default save as global');
+      return zh || en;
     })()`,
   ))
-  check('card has select + checkbox controls', await evaluate(
+  check('card has segmented + switch controls', await evaluate(
     `document.querySelector('[data-dsh-part="notes-setting-dockMode"]') !== null
       && document.querySelector('[data-dsh-part="notes-setting-buttonSize"]') !== null
       && document.querySelector('[data-dsh-part="notes-setting-defaultGlobal"]') !== null`,
   ))
 
   // ---- size preset: 较小 → dock shrinks live to 48 px ----
-  const setSelect = (part, value) => evaluate(`(() => {
-    const sel = document.querySelector('[data-dsh-part="${part}"]');
-    if (!sel) return false;
-    const setter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
-    setter.call(sel, ${JSON.stringify(value)});
-    sel.dispatchEvent(new Event('change', { bubbles: true }));
-    sel.dispatchEvent(new Event('input', { bubbles: true }));
+  // Segmented control: click the option button instead of a native select.
+  const clickSeg = (part, value) => evaluate(`(() => {
+    const btn = document.querySelector('[data-dsh-part="${part}-${value}"]');
+    if (!btn) return false;
+    btn.click();
     return true;
   })()`)
-  check('set buttonSize small', await setSelect('notes-setting-buttonSize', 'small'))
+  check('set buttonSize small', await clickSeg('notes-setting-buttonSize', 'small'))
   check('dock shrinks to small (48px) live', await waitFor(
     `(() => {
       const dock = document.querySelector('[data-dsh-part="notes-dock"]');
@@ -258,7 +285,7 @@ const main = async () => {
     'size-small',
   ))
 
-  check('set buttonSize large', await setSelect('notes-setting-buttonSize', 'large'))
+  check('set buttonSize large', await clickSeg('notes-setting-buttonSize', 'large'))
   check('dock restores to large (80px)', await waitFor(
     `(() => {
       const dock = document.querySelector('[data-dsh-part="notes-dock"]');
@@ -270,7 +297,7 @@ const main = async () => {
   ))
 
   // ---- pinned mode: 固定 → dock moves to the conversation top-right ----
-  check('set dockMode fixed', await setSelect('notes-setting-dockMode', 'fixed'))
+  check('set dockMode fixed', await clickSeg('notes-setting-dockMode', 'fixed'))
   const pinned = await waitFor(
     `(() => {
       const dock = document.querySelector('[data-dsh-part="notes-dock"]');
@@ -303,7 +330,10 @@ const main = async () => {
   ))
 
   // Close the settings dialog, then verify the editor checkbox defaults ON.
-  await evaluate(`Array.from(document.querySelectorAll('button')).find((b) => (b.innerText || '').trim() === '关闭')?.click()`)
+  await evaluate(`Array.from(document.querySelectorAll('button')).find((b) => {
+    const t = (b.innerText || '').trim();
+    return t === '关闭' || t === 'Close';
+  })?.click()`)
   await sleep(800)
   check('settings dialog closed', await evaluate(`document.querySelector('[role="dialog"]') === null`))
 
@@ -333,7 +363,10 @@ const main = async () => {
   ))
   // Cancel the draft (nothing saved).
   await evaluate(`Array.from(document.querySelectorAll('button')).find((b) => (b.innerText.includes('取消') || b.innerText.includes('Cancel')))?.click()`)
-  await evaluate(`Array.from(document.querySelectorAll('.dshn-icon-btn')).find((b) => (b.getAttribute('aria-label') || '').includes('笔记') || b.textContent.includes('✕'))?.click()`)
+  await evaluate(`Array.from(document.querySelectorAll('.dshn-icon-btn')).find((b) => {
+    const label = b.getAttribute('aria-label') || '';
+    return label.includes('笔记') || label.includes('Notes') || b.textContent.includes('✕');
+  })?.click()`)
   await sleep(300)
 
   // ---- pinned dock is not draggable ----
@@ -358,13 +391,29 @@ const main = async () => {
 
   // ---- restore every preference (settings card again) ----
   check('settings → 插件 reopens', await openPluginsSettings())
+  check('card re-expands for restore', await evaluate(`(() => {
+    const card = document.querySelector('[data-dsh-part="notes-settings-card"]');
+    const header = card?.querySelector('.dshn-settings-header');
+    if (!card || !header) return false;
+    if (header.getAttribute('aria-expanded') !== 'true') header.click();
+    return true;
+  })()`))
+  check('restore card visible', await waitFor(
+    `(() => {
+      const card = document.querySelector('[data-dsh-part="notes-settings-card"]');
+      const header = card?.querySelector('.dshn-settings-header');
+      return header?.getAttribute('aria-expanded') === 'true'
+        && card?.querySelector('.dshn-settings-body') !== null;
+    })()`,
+    'restore-card-expanded',
+  ))
   check('set defaultGlobal off', await evaluate(`(() => {
     const box = document.querySelector('[data-dsh-part="notes-setting-defaultGlobal"]');
     if (!box || !box.checked) return false;
     box.click();
     return true;
   })()`))
-  check('set dockMode floating', await setSelect('notes-setting-dockMode', 'floating'))
+  check('set dockMode floating', await clickSeg('notes-setting-dockMode', 'floating'))
   check('settings restored to defaults', await waitFor(
     `(() => {
       const dock = document.querySelector('[data-dsh-part="notes-dock"]');
@@ -385,7 +434,10 @@ const main = async () => {
   check('floating dock back at right edge center', floatGeom !== null
     && Math.abs(floatGeom.right - floatGeom.vw + 10) < 3
     && Math.abs(floatGeom.top + floatGeom.h / 2 - floatGeom.vh / 2) < 3)
-  await evaluate(`Array.from(document.querySelectorAll('button')).find((b) => (b.innerText || '').trim() === '关闭')?.click()`)
+  await evaluate(`Array.from(document.querySelectorAll('button')).find((b) => {
+    const t = (b.innerText || '').trim();
+    return t === '关闭' || t === 'Close';
+  })?.click()`)
   await sleep(500)
 
   console.log('')

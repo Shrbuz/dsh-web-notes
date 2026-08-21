@@ -15,6 +15,7 @@ export declare const zh: {
     readonly 'notes.panel.new': "新建";
     readonly 'notes.panel.searchPlaceholder': "搜索标题、内容或标签…";
     readonly 'notes.panel.empty': "还没有笔记。点击「新建」记录命令、凭证或参数值，或选中任意文本一键保存。";
+    readonly 'notes.panel.emptyTitle': "随手记录，随时调用";
     readonly 'notes.panel.loading': "加载中…";
     readonly 'notes.panel.loadFailed': "笔记加载失败，请刷新重试";
     readonly 'notes.editor.titlePlaceholder': "标题（可选，默认取内容首行）";
@@ -49,17 +50,17 @@ export declare const zh: {
     readonly 'notes.item.sessionTag': "会话";
     readonly 'notes.item.globalTag': "全局";
     readonly 'notes.settings.title': "笔记";
-    readonly 'notes.settings.description': "快捷入口、按钮大小与新建笔记的默认作用域。";
+    readonly 'notes.settings.description': "一键创建笔记和引入笔记内容到对话框。";
+    readonly 'notes.settings.expand': "展开设置: 笔记";
+    readonly 'notes.settings.collapse': "收起设置: 笔记";
     readonly 'notes.settings.dockMode': "快捷入口";
-    readonly 'notes.settings.dockModeFloating': "悬浮（可拖动）";
-    readonly 'notes.settings.dockModeFixed': "固定（对话窗口右上角）";
-    readonly 'notes.settings.dockModeHint': "悬浮：右边缘可自由拖动；固定：钉在对话窗口右上角，不可拖动。";
+    readonly 'notes.settings.dockModeFloating': "悬浮";
+    readonly 'notes.settings.dockModeFixed': "固定";
     readonly 'notes.settings.buttonSize': "悬浮按钮大小";
     readonly 'notes.settings.buttonSizeSmall': "较小";
     readonly 'notes.settings.buttonSizeRegular': "常规";
     readonly 'notes.settings.buttonSizeLarge': "较大";
     readonly 'notes.settings.defaultGlobal': "默认保存全局";
-    readonly 'notes.settings.defaultGlobalHint': "新建笔记默认保存到全局（所有会话可见）。";
     readonly 'notes.time.justNow': "刚刚";
     readonly 'notes.time.minutesAgo': "{n} 分钟前";
     readonly 'notes.time.hoursAgo': "{n} 小时前";
@@ -67,6 +68,9 @@ export declare const zh: {
     readonly 'notes.time.daysAgo': "{n} 天前";
     readonly 'notes.confirm.ok': "确定";
     readonly 'notes.confirm.cancel': "取消";
+    readonly 'notes.footer.star': "喜欢这个插件？去 GitHub / CNB 点个 Star ⭐";
+    readonly 'notes.footer.github': "GitHub";
+    readonly 'notes.footer.cnb': "CNB";
 };
 /** English copy. */
 export declare const en: {
@@ -75,6 +79,7 @@ export declare const en: {
     readonly 'notes.panel.new': "New";
     readonly 'notes.panel.searchPlaceholder': "Search title, content or tags…";
     readonly 'notes.panel.empty': "No notes yet. Click “New” to capture commands, credentials or parameter values, or select any text to save it with one click.";
+    readonly 'notes.panel.emptyTitle': "Jot it down, use it anytime";
     readonly 'notes.panel.loading': "Loading…";
     readonly 'notes.panel.loadFailed': "Failed to load notes. Refresh and try again.";
     readonly 'notes.editor.titlePlaceholder': "Title (optional; defaults to the first line)";
@@ -109,17 +114,17 @@ export declare const en: {
     readonly 'notes.item.sessionTag': "session";
     readonly 'notes.item.globalTag': "global";
     readonly 'notes.settings.title': "Notes";
-    readonly 'notes.settings.description': "Quick access, button size and the default scope for new notes.";
+    readonly 'notes.settings.description': "Create notes and insert them into the conversation with one click.";
+    readonly 'notes.settings.expand': "Expand settings: Notes";
+    readonly 'notes.settings.collapse': "Collapse settings: Notes";
     readonly 'notes.settings.dockMode': "Quick access";
-    readonly 'notes.settings.dockModeFloating': "Floating (draggable)";
-    readonly 'notes.settings.dockModeFixed': "Pinned (top-right of the chat window)";
-    readonly 'notes.settings.dockModeHint': "Floating: free drag on the right edge. Pinned: locked to the chat window’s top-right corner.";
+    readonly 'notes.settings.dockModeFloating': "Floating";
+    readonly 'notes.settings.dockModeFixed': "Pinned";
     readonly 'notes.settings.buttonSize': "Floating button size";
     readonly 'notes.settings.buttonSizeSmall': "Small";
     readonly 'notes.settings.buttonSizeRegular': "Regular";
     readonly 'notes.settings.buttonSizeLarge': "Large";
     readonly 'notes.settings.defaultGlobal': "Default save as global";
-    readonly 'notes.settings.defaultGlobalHint': "New notes default to global (visible in every session).";
     readonly 'notes.time.justNow': "just now";
     readonly 'notes.time.minutesAgo': "{n} min ago";
     readonly 'notes.time.hoursAgo': "{n} h ago";
@@ -127,6 +132,9 @@ export declare const en: {
     readonly 'notes.time.daysAgo': "{n} d ago";
     readonly 'notes.confirm.ok': "OK";
     readonly 'notes.confirm.cancel': "Cancel";
+    readonly 'notes.footer.star': "Enjoying this plugin? Star it on GitHub / CNB ⭐";
+    readonly 'notes.footer.github': "GitHub";
+    readonly 'notes.footer.cnb': "CNB";
 };
 /** Key union for this namespace. */
 export type NoteKey = keyof typeof zh;

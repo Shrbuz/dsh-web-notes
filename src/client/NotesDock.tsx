@@ -644,8 +644,12 @@ export function NotesDock(props: NotesDockProps): ReactElement {
       >
         <span className="dshn-dock-inner">
           <NotebookIcon />
-          {count > 0 ? <span className="dshn-dock-badge">{count > 99 ? '99+' : count}</span> : null}
         </span>
+        {/* Badge lives OUTSIDE .dshn-dock-inner: the inner carrier clips its
+            shine sweep with overflow:hidden, which would also cut the badge
+            off at the button edge. As a direct child of the fixed dock it
+            sits on the corner, unclipped. */}
+        {count > 0 ? <span className="dshn-dock-badge">{count > 99 ? '99+' : count}</span> : null}
         <span className="dshn-dock-tooltip">{t('notes.dock.tooltip')}</span>
       </button>
 
