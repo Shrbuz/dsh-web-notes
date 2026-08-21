@@ -10,6 +10,9 @@ node_modules/
 # npm pack output
 *.tgz
 
+# local-only release checklist (not tracked)
+RELEASE.md
+
 # OS files
 .DS_Store
 Thumbs.db
