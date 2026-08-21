@@ -4,7 +4,18 @@
   "version": "0.7.0",
   "type": "module",
   "packageManager": "pnpm@11.7.0",
-  "author": "Shrbuz",
+  "author": {
+    "name": "Shrbuz",
+    "url": "https://github.com/Shrbuz"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Shrbuz/dsh-web-notes.git"
+  },
+  "homepage": "https://github.com/Shrbuz/dsh-web-notes",
+  "bugs": {
+    "url": "https://github.com/Shrbuz/dsh-web-notes/issues"
+  },
   "keywords": [
     "dsh",
     "deepseek-harness",
