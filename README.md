@@ -7,12 +7,12 @@ Floating notes for the [DeepSeek Harness](https://github.com/deepseek-ai/DeepSee
 ## Features
 
 - **Floating dock** — an animated notebook icon on the right edge of the chat window, one click away at all times. Drag it anywhere (the position persists); it honours `prefers-reduced-motion`.
-- **Configurable placement & size** — in **设置 → 插件 → 插件配置** the dock can be set to **悬浮 (floating, draggable)** or **固定 (pinned to the chat window's top-right corner, not draggable)**, and the button size to **较小 / 常规 / 较大**. Changes apply live — no reload.
+- **Configurable placement & size** — in **Settings → Plugins → Plugin Configuration** the dock can be set to **floating** (draggable) or **fixed** (pinned to the chat window's top-right corner, not draggable), and the button size to **Small / Regular / Large**. Changes apply live — no reload.
 - **Notes panel** — slide-over panel with search, a note list (title, preview, tags, relative time), and per-note actions.
 - **Insert into the composer** — one click places the note's content into the current session's input box (the title stays a list label), ready to review and send. When no session is open, the content is copied to the clipboard instead.
 - **Save any selection** — select text anywhere on the page (e.g. part of an AI answer) and a floating **"Save as note"** button appears; one click captures it, with the first line as the title. The bubble **follows the selection while you scroll** and only disappears when the selection collapses, you click elsewhere on the page, or you switch windows.
-- **Markdown preview** — the note editor **auto-detects Markdown** (headings, lists, code fences, quotes, tables, links, bold/italic…). Plain notes stay a plain editor; once MD syntax is present an **编辑 / 预览** toggle appears, and the preview renders full GFM (sanitized with DOMPurify — raw HTML/scripts never execute).
-- **Per-session notes** — a note can be bound to the **current session** (visible only while that session is current) or saved as **global** (visible in every session and on the new-conversation screen). The panel has **All / This session / Global** scope tabs; new notes default to the current session, with a "save to global" checkbox in the editor — or default to global for every new note via the **默认保存全局** setting.
+- **Markdown preview** — the note editor **auto-detects Markdown** (headings, lists, code fences, quotes, tables, links, bold/italic…). Plain notes stay a plain editor; once MD syntax is present an **Edit / Preview** toggle appears, and the preview renders full GFM (sanitized with DOMPurify — raw HTML/scripts never execute).
+- **Per-session notes** — a note can be bound to the **current session** (visible only while that session is current) or saved as **global** (visible in every session and on the new-conversation screen). The panel has **All / This session / Global** scope tabs; new notes default to the current session, with a "save to global" checkbox in the editor — or default to global for every new note via the **Default to global** setting.
 - **Persistence** — notes are stored locally on the host under `$DSH_HOME/notes/notes.json` (default `~/.dsh/notes/notes.json`), atomic writes, tolerant reads.
 - **Privacy by design** — the notes API is loopback-only, so the data never leaves the local machine.
 - **Theme & skin adaptive** — every color rides the official dsh design tokens (`--dsw-alias-*`), so the UI matches the official light/dark theme out of the box AND recolors live when a skin plugin (dsh-skins / skin-center) is installed — no reload, no skin-specific code.
@@ -53,7 +53,7 @@ Then add the bundle to the profile manifest so it actually boots:
 
 ```sh
 dsh plugin --profile web list          # dsh-web-notes should be installed
-npm view dsh-web-notes version         # → 0.7.2
+npm view dsh-web-notes version         # → the latest published version
 ```
 
 After restarting dsh web, the notebook icon appears on the right edge of the chat window (see [Usage](#usage)).
@@ -65,7 +65,7 @@ After restarting dsh web, the notebook icon appears on the right edge of the cha
 ```sh
 dsh plugin --profile web update dsh-web-notes
 # or pin an exact version:
-dsh plugin --profile web add dsh-web-notes@0.7.2 --registry https://registry.npmjs.org/
+dsh plugin --profile web add dsh-web-notes@latest --registry https://registry.npmjs.org/
 ```
 
 > **Mirror sync delay**: publishing goes to the official registry, but mirrors like npmmirror sync on a delay — right after a release your default registry may still serve the previous version (or briefly 404). If an update "does nothing" after a new release, point at the official registry with `--registry https://registry.npmjs.org/`.
@@ -85,7 +85,7 @@ Notes are searchable by title, content and tags (comma-separated in the editor).
 
 ## Configuration
 
-The plugin registers a `notes` settings namespace and a settings card in **设置 → 插件 → 插件配置** (the namespace is also editable via `~/.dsh/settings.yaml`):
+The plugin registers a `notes` settings namespace and a settings card in **Settings → Plugins → Plugin Configuration** (the namespace is also editable via `~/.dsh/settings.yaml`):
 
 ```yaml
 notes:
@@ -124,4 +124,4 @@ The client bundle is built as a closure-factory artifact (`window.__ModuleLoader
 
 ## License
 
-Apache-2.0. © 2025 Shrbuz — see [NOTICE](NOTICE) for attribution.
+Apache-2.0. © 2026 Shrbuz — see [NOTICE](NOTICE) for attribution.

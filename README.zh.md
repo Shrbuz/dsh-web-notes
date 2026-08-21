@@ -53,7 +53,7 @@ dsh plugin --profile web add link:/path/to/dsh-web-notes
 
 ```sh
 dsh plugin --profile web list          # 应能看到 dsh-web-notes
-npm view dsh-web-notes version         # → 0.7.2
+npm view dsh-web-notes version         # → 最新已发布版本
 ```
 
 重启 dsh web 后，聊天窗口右侧会出现笔记本图标（见[使用](#使用)）。
@@ -65,7 +65,7 @@ npm view dsh-web-notes version         # → 0.7.2
 ```sh
 dsh plugin --profile web update dsh-web-notes
 # 或指定精确版本：
-dsh plugin --profile web add dsh-web-notes@0.7.2 --registry https://registry.npmjs.org/
+dsh plugin --profile web add dsh-web-notes@latest --registry https://registry.npmjs.org/
 ```
 
 > **镜像同步延迟**：发布是发到官方源的，而 npmmirror 等镜像同步有延迟——刚发布后你的默认源可能还是旧版本（甚至短暂 404）。如果新版本发布后 update「没反应」，加上 `--registry https://registry.npmjs.org/` 直连官方源即可。
@@ -124,4 +124,4 @@ node scripts/smoke-host.mjs   # 宿主逻辑独立冒烟测试（无需 dsh 应�
 
 ## License
 
-Apache-2.0。© 2025 Shrbuz — 署名信息见 [NOTICE](NOTICE)。
+Apache-2.0。© 2026 Shrbuz — 署名信息见 [NOTICE](NOTICE)。
