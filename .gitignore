@@ -13,6 +13,9 @@ node_modules/
 # local-only release checklist (not tracked)
 RELEASE.md
 
+# git-manager skill local config (may hold credentials)
+.cqy-skills-setting/
+
 # OS files
 .DS_Store
 Thumbs.db
