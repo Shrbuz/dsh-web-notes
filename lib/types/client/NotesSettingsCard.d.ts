@@ -1,8 +1,9 @@
 /**
  * Notes settings card — the `notes` entry inside the web settings surface
- * (设置 → 插件 → 插件配置). Rendered through the `settings.plugin.item` slot
- * keyed by the `notes` namespace; every control writes straight back through
- * the bound settings scope, so changes apply to the floating UI live.
+ * (设置 → 插件 → 插件配置). Follows the official plugin-card pattern: a
+ * collapsible header (name + description + chevron) that expands into the
+ * form. Every control writes straight back through the bound settings scope,
+ * so changes apply to the floating UI live — no save/discard footer needed.
  * @module dsh-web-notes/client/NotesSettingsCard
  */
 import { type ReactElement } from 'react';

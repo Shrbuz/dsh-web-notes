@@ -346,7 +346,14 @@ export function NotesPanel(props: NotesPanelProps): ReactElement {
   return (
     <section className="dshn-panel" data-dsh-notes-panel>
       <header className="dshn-panel-header">
-        <span className="dshn-panel-title">{t('notes.panel.title')}</span>
+        <span className="dshn-panel-title">
+          <svg className="dshn-panel-title-icon" width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M5.5 2.8C5.5 2.35817 5.85817 2 6.3 2H13.7C14.1418 2 14.5 2.35817 14.5 2.8V17.2C14.5 17.6418 14.1418 18 13.7 18H6.3C5.85817 18 5.5 17.6418 5.5 17.2V2.8Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+            <path d="M14.5 5.5H16C16.5523 5.5 17 5.94772 17 6.5V15.5C17 16.6046 16.1046 17.5 15 17.5H14.5" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" opacity="0.55" />
+            <path d="M7.8 6H12.2M7.8 9H12.2M7.8 12H10.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+          </svg>
+          {t('notes.panel.title')}
+        </span>
         <span className="dshn-panel-count">{count}</span>
         <button
           type="button"
@@ -400,11 +407,28 @@ export function NotesPanel(props: NotesPanelProps): ReactElement {
         <div className="dshn-loading" role="status">{t('notes.panel.loading')}</div>
       ) : list.length === 0 ? (
         <div className="dshn-empty">
-          <svg className="dshn-empty-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M6 3.5C6 2.94772 6.44772 2.5 7 2.5H17C17.5523 2.5 18 2.94772 18 3.5V20.5C18 21.0523 17.5523 21.5 17 21.5H7C6.44772 21.5 6 21.0523 6 20.5V3.5Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-            <path d="M9 6.5H15M9 10H15M9 13.5H12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-          </svg>
-          <span>{t('notes.panel.empty')}</span>
+          <div className="dshn-empty-art" aria-hidden="true">
+            <svg width="88" height="88" viewBox="0 0 96 96" fill="none">
+              {/* notebook pages — official neutral bluish tones */}
+              <path d="M30 14C30 11.7909 31.7909 10 34 10H66C68.2091 10 70 11.7909 70 14V82C70 84.2091 68.2091 86 66 86H34C31.7909 86 30 84.2091 30 82V14Z" stroke="var(--dshn-neutral-500)" strokeWidth="1.8" strokeLinejoin="round" opacity="0.6" />
+              <path d="M22 20C22 17.7909 23.7909 16 26 16H62C64.2091 16 66 17.7909 66 20V88C66 90.2091 64.2091 92 62 92H26C23.7909 92 22 90.2091 22 88V20Z" fill="var(--dshn-bg-overlay)" stroke="var(--dshn-neutral-600)" strokeWidth="1.8" strokeLinejoin="round" />
+              {/* lines on front page */}
+              <path d="M30 30H58M30 38H58M30 46H50" stroke="var(--dshn-neutral-500)" strokeWidth="2.2" strokeLinecap="round" opacity="0.7" />
+              <path d="M30 56H54M30 64H54" stroke="var(--dshn-neutral-500)" strokeWidth="2.2" strokeLinecap="round" opacity="0.45" />
+              {/* sparkle — official business blue accent */}
+              <path d="M76 26L78 32L84 34L78 36L76 42L74 36L68 34L74 32L76 26Z" fill="var(--dshn-primary)" opacity="0.85" />
+              <circle cx="70" cy="60" r="3" fill="var(--dshn-primary)" opacity="0.5" />
+              <circle cx="80" cy="72" r="2" fill="var(--dshn-primary)" opacity="0.35" />
+            </svg>
+          </div>
+          <div className="dshn-empty-title">{t('notes.panel.emptyTitle')}</div>
+          <div className="dshn-empty-hint">{t('notes.panel.empty')}</div>
+          <button type="button" className="dshn-empty-new" onClick={() => { startNew() }}>
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M7 2.5V11.5M2.5 7H11.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
+            {t('notes.panel.new')}
+          </button>
         </div>
       ) : (
         <div className="dshn-list">
@@ -416,7 +440,8 @@ export function NotesPanel(props: NotesPanelProps): ReactElement {
             return (
               <article
                 key={note.id}
-                className="dshn-item"
+                className={`dshn-item${note.sessionId === undefined ? ' dshn-item-global' : ' dshn-item-session'}`}
+                data-source={note.source ?? 'manual'}
                 onClick={() => { if (!confirmed) startEdit(note) }}
                 role="button"
                 tabIndex={0}
@@ -439,15 +464,27 @@ export function NotesPanel(props: NotesPanelProps): ReactElement {
                     : (
                       <>
                         <button type="button" className="dshn-action" title={t('notes.item.insert')} onClick={() => { showToast(onInsert(note)) }}>
+                          <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                            <path d="M3.5 7H10.5M10.5 7L8 4.5M10.5 7L8 9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
                           {t('notes.item.insert')}
                         </button>
                         <button type="button" className="dshn-action" title={t('notes.item.copy')} onClick={() => { void copyNote(note) }}>
+                          <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                            <path d="M4.5 4.5H3.5C3.22386 4.5 3 4.72386 3 5V11.5C3 11.7761 3.22386 12 3.5 12H9C9.27614 12 9.5 11.7761 9.5 11.5V10.5M4.5 4.5H10.5C10.7761 4.5 11 4.72386 11 5V10.5M4.5 4.5V10.5C4.5 10.7761 4.72386 11 5 11H10.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
                           {t('notes.item.copy')}
                         </button>
                         <button type="button" className="dshn-action" title={t('notes.item.edit')} onClick={() => { startEdit(note) }}>
+                          <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                            <path d="M8.5 3L11 5.5M2.5 11.5L5.2 10.8L11.5 4.5C11.8 4.2 11.8 3.7 11.5 3.4L10.6 2.5C10.3 2.2 9.8 2.2 9.5 2.5L3.2 8.8L2.5 11.5Z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
                           {t('notes.item.edit')}
                         </button>
                         <button type="button" className="dshn-action dshn-action-danger" title={t('notes.item.delete')} onClick={() => { setConfirmId(note.id) }}>
+                          <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                            <path d="M2.5 4H11.5M5.5 4V2.8C5.5 2.63431 5.63431 2.5 5.8 2.5H8.2C8.36569 2.5 8.5 2.63431 8.5 2.8V4M3.5 4L4.2 11.2C4.22286 11.4869 4.45858 11.7 4.746 11.7H9.254C9.54142 11.7 9.77714 11.4869 9.8 11.2L10.5 4M5.8 6V9.7M8.2 6V9.7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
                           {t('notes.item.delete')}
                         </button>
                       </>
@@ -460,7 +497,7 @@ export function NotesPanel(props: NotesPanelProps): ReactElement {
                   <span className={note.sessionId === undefined ? 'dshn-tag dshn-scope-tag dshn-scope-tag-global' : 'dshn-tag dshn-scope-tag'}>
                     {note.sessionId === undefined ? t('notes.item.globalTag') : t('notes.item.sessionTag')}
                   </span>
-                  <span>{relativeTime(note.updatedAt, props.t)}</span>
+                  <span className="dshn-item-time">{relativeTime(note.updatedAt, props.t)}</span>
                 </div>
                 {note.tags.length > 0 ? (
                   <div className="dshn-item-tags">
@@ -472,6 +509,27 @@ export function NotesPanel(props: NotesPanelProps): ReactElement {
           })}
         </div>
       )}
+      <div className="dshn-footer">
+        <span className="dshn-footer-text">{t('notes.footer.star')}</span>
+        <span className="dshn-footer-links">
+          <a
+            className="dshn-footer-link"
+            href="https://github.com/Shrbuz/dsh-web-notes"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t('notes.footer.github')}
+          </a>
+          <a
+            className="dshn-footer-link"
+            href="https://cnb.cool/wfhmkj2021/chenqiangyong/dsh-web-notes"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t('notes.footer.cnb')}
+          </a>
+        </span>
+      </div>
       {toast !== null ? <div className="dshn-toast" role="status">{toast}</div> : null}
     </section>
   )
