@@ -20,10 +20,18 @@
 
 ## 安装
 
-### 从 npm 安装（发布后）
+### 从 npm 安装
+
+插件已发布到 npm registry：
 
 ```sh
 dsh plugin --profile web add dsh-web-notes
+```
+
+如果你的默认 npm 源是镜像且尚未同步到该包（例如 npmmirror——只读、同步有延迟），可直接指定官方源安装：
+
+```sh
+dsh plugin --profile web add dsh-web-notes --registry https://registry.npmjs.org/
 ```
 
 ### 本地开发安装
@@ -40,6 +48,15 @@ dsh plugin --profile web add link:/path/to/dsh-web-notes
 ```
 
 > 官方 `dsh plugin --profile web add <spec>` 只是转发给 pnpm：它会安装包，但**不会**修改 `dsh.profile.bundles` 清单——由这个清单决定哪些已安装的包会被启动。需要手动把包名加进去（或通过聚合包携带 `cordis.patch.yml` insert），再重启。
+
+### 验证安装
+
+```sh
+dsh plugin --profile web list          # 应能看到 dsh-web-notes
+npm view dsh-web-notes version         # → 0.7.0
+```
+
+重启 dsh web 后，聊天窗口右侧会出现笔记本图标（见[使用](#使用)）。
 
 ## 使用
 

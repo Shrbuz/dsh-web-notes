@@ -20,10 +20,18 @@ Floating notes for the [DeepSeek Harness](https://github.com/deepseek-ai/DeepSee
 
 ## Install
 
-### From npm (once published)
+### From npm
+
+The package is published on the npm registry:
 
 ```sh
 dsh plugin --profile web add dsh-web-notes
+```
+
+If your default npm registry is a mirror that has not synced the package yet (e.g. npmmirror — read-only, syncs with a delay), install straight from the official registry instead:
+
+```sh
+dsh plugin --profile web add dsh-web-notes --registry https://registry.npmjs.org/
 ```
 
 ### From a local checkout (development)
@@ -40,6 +48,15 @@ Then add the bundle to the profile manifest so it actually boots:
 ```
 
 > The official `dsh plugin --profile web add <spec>` command forwards to pnpm; it installs the package but does **not** edit the `dsh.profile.bundles` manifest — that list decides which installed packages boot. Add the package name there (or ship a `cordis.patch.yml` insert via an aggregator bundle) and restart.
+
+### Verify the install
+
+```sh
+dsh plugin --profile web list          # dsh-web-notes should be installed
+npm view dsh-web-notes version         # → 0.7.0
+```
+
+After restarting dsh web, the notebook icon appears on the right edge of the chat window (see [Usage](#usage)).
 
 ## Usage
 
