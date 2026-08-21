@@ -1,7 +1,7 @@
 {
   "name": "dsh-web-notes",
   "description": "Floating notes for the dsh web GUI: keep commands, credentials, parameter values and other important snippets at hand while working, insert any note straight into the composer, and save any selected text (e.g. from an AI answer) as a note with one click",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "type": "module",
   "packageManager": "pnpm@11.7.0",
   "author": {
