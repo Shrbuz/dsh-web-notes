@@ -4,7 +4,7 @@
  * @module dsh-web-notes/client/NotesPanel
  */
 
-import { useCallback, useEffect, useRef, useState, type ReactElement } from 'react'
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type ReactElement } from 'react'
 import type { NotesApi, NoteView } from './api.ts'
 import { relativeTime, type NoteKey } from './locales.ts'
 import { detectMarkdown, renderMarkdown } from './markdown.ts'
@@ -49,6 +49,27 @@ export interface NotesPanelProps {
 
 const SEARCH_DEBOUNCE_MS = 300
 
+/** Panel width bounds (px) — draggable resize, persisted per browser. */
+const PANEL_WIDTH_MIN = 280
+const PANEL_WIDTH_MAX = 640
+const PANEL_WIDTH_DEFAULT = 400
+const PANEL_WIDTH_STORAGE_KEY = 'dsh-notes.panel-width'
+
+/** Load the persisted panel width; tolerant of corrupt/missing entries. */
+function loadPanelWidth(): number {
+  try {
+    const raw = localStorage.getItem(PANEL_WIDTH_STORAGE_KEY)
+    if (raw === null) return PANEL_WIDTH_DEFAULT
+    const parsed = Number(raw)
+    if (Number.isFinite(parsed)) {
+      return Math.min(PANEL_WIDTH_MAX, Math.max(PANEL_WIDTH_MIN, parsed))
+    }
+  } catch {
+    // localStorage unavailable; the default width applies.
+  }
+  return PANEL_WIDTH_DEFAULT
+}
+
 /** The notes panel. */
 export function NotesPanel(props: NotesPanelProps): ReactElement {
   const { api, t, onInsert, onClose, onChanged, seed, onSeedConsumed } = props
@@ -69,6 +90,41 @@ export function NotesPanel(props: NotesPanelProps): ReactElement {
   // auto-save binds to the session being LEFT, not the one being entered.
   const sessionIdRef = useRef<string | null>(sessionId)
   const editingRef = useRef<NoteDraft | null>(null)
+  // Panel width (draggable left edge), persisted across reloads.
+  const [panelWidth, setPanelWidth] = useState<number>(() => loadPanelWidth())
+  const resizeRef = useRef<{ startX: number; startWidth: number } | null>(null)
+
+  /** Begin dragging the panel's left edge to resize it. */
+  const onResizeStart = useCallback((event: ReactPointerEvent<HTMLDivElement>): void => {
+    if (event.button !== 0) return
+    resizeRef.current = { startX: event.clientX, startWidth: panelWidth }
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId)
+    } catch {
+      // Synthetic pointers (tests) have no capture; dragging still works.
+    }
+  }, [panelWidth])
+
+  /** Track the pointer while dragging, clamping to the width bounds. */
+  const onResizeMove = useCallback((event: ReactPointerEvent<HTMLDivElement>): void => {
+    const state = resizeRef.current
+    if (state === null) return
+    const next = Math.min(PANEL_WIDTH_MAX, Math.max(PANEL_WIDTH_MIN, state.startWidth + (state.startX - event.clientX)))
+    setPanelWidth(next)
+  }, [])
+
+  /** End the drag and persist the final width. */
+  const onResizeEnd = useCallback((): void => {
+    resizeRef.current = null
+    setPanelWidth((current) => {
+      try {
+        localStorage.setItem(PANEL_WIDTH_STORAGE_KEY, String(current))
+      } catch {
+        // localStorage unavailable; the width still applies for this page.
+      }
+      return current
+    })
+  }, [])
 
   const showToast = useCallback((text: string): void => {
     setToast(text)
@@ -264,7 +320,16 @@ export function NotesPanel(props: NotesPanelProps): ReactElement {
   // Editor view.
   if (editing !== null) {
     return (
-      <section className="dshn-panel" data-dsh-notes-panel>
+      <section className="dshn-panel" data-dsh-notes-panel style={{ '--dshn-panel-width': `${panelWidth}px` } as React.CSSProperties}>
+        <div
+          className="dshn-panel-resize"
+          data-dsh-part="notes-panel-resize"
+          aria-hidden="true"
+          onPointerDown={onResizeStart}
+          onPointerMove={onResizeMove}
+          onPointerUp={onResizeEnd}
+          onPointerCancel={onResizeEnd}
+        />
         <header className="dshn-panel-header">
           <button
             type="button"
@@ -382,7 +447,16 @@ export function NotesPanel(props: NotesPanelProps): ReactElement {
   // List view.
   const list = notes ?? []
   return (
-    <section className="dshn-panel" data-dsh-notes-panel>
+    <section className="dshn-panel" data-dsh-notes-panel style={{ '--dshn-panel-width': `${panelWidth}px` } as CSSProperties}>
+      <div
+        className="dshn-panel-resize"
+        data-dsh-part="notes-panel-resize"
+        aria-hidden="true"
+        onPointerDown={onResizeStart}
+        onPointerMove={onResizeMove}
+        onPointerUp={onResizeEnd}
+        onPointerCancel={onResizeEnd}
+      />
       <header className="dshn-panel-header">
         <span className="dshn-panel-title">
           <svg className="dshn-panel-title-icon" width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">

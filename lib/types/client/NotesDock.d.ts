@@ -14,12 +14,18 @@ import { type ReactElement } from 'react';
 import type { ISessions, SettingsScope } from '@deepseek-ai/dsh-client-runtime/client';
 import type { NotesApi, NoteView } from './api.ts';
 import type { NotesUiSettings } from './settings.ts';
+/** Shorten a long selection for insertion: keep a head and a tail excerpt
+ *  joined by an ellipsis (e.g. the first and last few words), so citing a
+ *  long AI answer stays compact. Short text passes through unchanged. */
+export declare function summarizeForInsert(text: string, excerptWords?: number, thresholdChars?: number): string;
 /** Props of the notes dock. */
 export interface NotesDockProps {
     api: NotesApi;
     t: (key: string, params?: Record<string, unknown>) => string;
     /** Insert one note into the composer (or copy it when no session is open). Returns a toast copy. */
     onInsert: (note: NoteView) => string;
+    /** Insert raw text into the composer (selection "insert to input"). Returns a toast copy. */
+    onInsertText: (text: string) => string;
     /** Whether the selection-capture bubble is enabled (host switch). */
     selectionCapture: boolean;
     /** The sessions service, so the dock knows the current session for scoping. */

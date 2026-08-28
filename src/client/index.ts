@@ -34,16 +34,13 @@ import { NOTES_CSS } from './styles.ts'
 export const inject = ['sessions', 'conversation', 'slots', 'settingsScope']
 
 /**
- * Insert a note into the current session's composer draft; falls back to the
- * clipboard when no session is open or the input facade is unreachable.
- * Only the note CONTENT is inserted — the title is a list label, not chat
- * payload, and would only add noise to the draft.
+ * Insert raw text into the current session's composer draft; falls back to
+ * the clipboard when no session is open or the input facade is unreachable.
  * @param ctx - client root context.
- * @param note - the note to insert.
+ * @param text - the text to insert.
  * @returns a toast copy describing what happened.
  */
-function insertIntoComposer(ctx: ClientContext, note: NoteView): string {
-  const text = note.content
+function insertTextIntoComposer(ctx: ClientContext, text: string): string {
   const list = ctx.sessions.list.getSnapshot()
   const current = list.current
   if (current !== undefined) {
@@ -54,7 +51,7 @@ function insertIntoComposer(ctx: ClientContext, note: NoteView): string {
         const snapshot = input.state.getSnapshot()
         const draft = snapshot.draft ?? ''
         input.setDraft(draft.trim() === '' ? text : draft + '\n\n' + text)
-        return t('notes.item.inserted')
+        return t('notes.selection.inserted')
       } catch {
         // Fall through to the clipboard path.
       }
@@ -71,6 +68,18 @@ function insertIntoComposer(ctx: ClientContext, note: NoteView): string {
     })
   }
   return t('notes.item.noSession')
+}
+
+/**
+ * Insert a note into the current session's composer draft.
+ * Only the note CONTENT is inserted — the title is a list label, not chat
+ * payload, and would only add noise to the draft.
+ * @param ctx - client root context.
+ * @param note - the note to insert.
+ * @returns a toast copy describing what happened.
+ */
+function insertIntoComposer(ctx: ClientContext, note: NoteView): string {
+  return insertTextIntoComposer(ctx, note.content)
 }
 
 /**
@@ -134,6 +143,7 @@ export function apply(ctx: ClientContext): void {
       settingsScope,
       selectionCapture: capture,
       onInsert: (note) => insertIntoComposer(ctx, note),
+      onInsertText: (text) => insertTextIntoComposer(ctx, text),
     }))
   }
   const syncEnabled = (): void => {
