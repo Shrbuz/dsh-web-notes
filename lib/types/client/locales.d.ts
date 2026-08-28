@@ -38,7 +38,7 @@ export declare const zh: {
     readonly 'notes.item.copyFailed': "复制失败，请手动选择";
     readonly 'notes.item.saved': "笔记已保存";
     readonly 'notes.selection.save': "存为笔记";
-    readonly 'notes.selection.insert': "引入输入框";
+    readonly 'notes.selection.insert': "引入到对话";
     readonly 'notes.selection.inserted': "已放入输入框，回车发送";
     readonly 'notes.selection.saved': "已保存为笔记";
     readonly 'notes.source.selection': "选中保存";
@@ -104,7 +104,7 @@ export declare const en: {
     readonly 'notes.item.copyFailed': "Copy failed; select the text manually";
     readonly 'notes.item.saved': "Note saved";
     readonly 'notes.selection.save': "Save as note";
-    readonly 'notes.selection.insert': "Insert to input";
+    readonly 'notes.selection.insert': "Insert to conversation";
     readonly 'notes.selection.inserted': "Inserted into the input box — press Enter to send";
     readonly 'notes.selection.saved': "Saved as a note";
     readonly 'notes.source.selection': "Selection";

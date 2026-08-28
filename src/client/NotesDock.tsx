@@ -27,18 +27,53 @@ import { NotesPanel, type NoteDraft } from './NotesPanel.tsx'
 import type { NotesUiSettings } from './settings.ts'
 import { deriveUiSettings } from './settings.ts'
 
+/** Split text into words for both Latin and CJK input: `Intl.Segmenter`
+ *  with word granularity when available (correct CJK word boundaries),
+ *  falling back to whitespace tokens (Latin) plus Han character runs. */
+function splitWords(text: string): string[] {
+  const fallback = text.match(/\S+/g) ?? []
+  if (typeof Intl === 'undefined' || typeof Intl.Segmenter === 'undefined') {
+    // No Intl.Segmenter: group Latin words by whitespace and each CJK
+    // character run by Han script (a contiguous Han block is one token).
+    return text.match(/[\p{Script=Han}]+|\S+/gu) ?? fallback
+  }
+  const segmenter = new Intl.Segmenter(undefined, { granularity: 'word' })
+  const words: string[] = []
+  for (const segment of segmenter.segment(text)) {
+    if (segment.isWordLike && segment.segment.trim() !== '') {
+      words.push(segment.segment)
+    }
+  }
+  return words.length > 0 ? words : fallback
+}
+
 /** Shorten a long selection for insertion: keep a head and a tail excerpt
  *  joined by an ellipsis (e.g. the first and last few words), so citing a
- *  long AI answer stays compact. Short text passes through unchanged. */
+ *  long AI answer stays compact. Short text passes through unchanged.
+ *  CJK and Latin are both handled: word boundaries come from Intl.Segmenter
+ *  (or a Han-aware fallback). */
+/** Shorten a long selection for insertion: keep a head and a tail excerpt
+ *  joined by an ellipsis, so citing a long AI answer stays compact. Short
+ *  text passes through unchanged.
+ *  - Latin: keep `excerptWords` words from each end.
+ *  - CJK: Intl.Segmenter gives per-character tokens (no spaces), so instead
+ *    keep ~2 characters per "word" (a CJK word is typically two characters);
+ *    a mixed string is treated by its Han share.
+ */
 export function summarizeForInsert(text: string, excerptWords = 3, thresholdChars = 80): string {
   const trimmed = text.trim()
   if (trimmed === '') return ''
   if (trimmed.length <= thresholdChars) return trimmed
-  const words = trimmed.split(/\s+/).filter((word) => word !== '')
-  if (words.length <= excerptWords * 2) return trimmed
-  const head = words.slice(0, excerptWords).join(' ')
-  const tail = words.slice(-excerptWords).join(' ')
-  return `${head} … ${tail}`
+  const hasHan = /[\p{Script=Han}]/u.test(trimmed)
+  // CJK words have no spaces and Intl.Segmenter yields per-character tokens:
+  // keep ~2 characters per requested "word".
+  const keep = hasHan ? excerptWords * 2 : excerptWords
+  const words = splitWords(trimmed)
+  if (words.length <= keep * 2) return trimmed
+  const head = words.slice(0, keep)
+  const tail = words.slice(-keep)
+  const joiner = hasHan ? '' : ' '
+  return `${head.join(joiner)} … ${tail.join(joiner)}`
 }
 
 /** How the dock places the selection bubble. */
@@ -452,11 +487,13 @@ export function NotesDock(props: NotesDockProps): ReactElement {
     })
   }, [openWithDraft, currentSessionId, ui.defaultGlobal])
 
-  /** Insert the selection into the composer: short text verbatim, long text
-   *  summarized as head…tail excerpt. Returns the toast copy from the host. */
+  /** Insert the selection into the composer as a reference chip: the FULL
+   *  text is passed through (the quote source stores it and mints a summary
+   *  chip; on send the codec expands it back to the full text the model
+   *  reads). Returns the toast copy from the host. */
   const insertSelection = useCallback((text: string): string => {
     setSelection(null)
-    return onInsertText(summarizeForInsert(text))
+    return onInsertText(text)
   }, [onInsertText])
 
   // ---- dock dragging ----
@@ -718,7 +755,7 @@ export function NotesDock(props: NotesDockProps): ReactElement {
               data-dsh-part="notes-selection-insert"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" transform="rotate(45 12 12)" />
+                <path d="M12 4V20M6 14L12 20L18 14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               {t('notes.selection.insert')}
             </button>

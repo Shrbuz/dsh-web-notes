@@ -16,7 +16,17 @@ import type { NotesApi, NoteView } from './api.ts';
 import type { NotesUiSettings } from './settings.ts';
 /** Shorten a long selection for insertion: keep a head and a tail excerpt
  *  joined by an ellipsis (e.g. the first and last few words), so citing a
- *  long AI answer stays compact. Short text passes through unchanged. */
+ *  long AI answer stays compact. Short text passes through unchanged.
+ *  CJK and Latin are both handled: word boundaries come from Intl.Segmenter
+ *  (or a Han-aware fallback). */
+/** Shorten a long selection for insertion: keep a head and a tail excerpt
+ *  joined by an ellipsis, so citing a long AI answer stays compact. Short
+ *  text passes through unchanged.
+ *  - Latin: keep `excerptWords` words from each end.
+ *  - CJK: Intl.Segmenter gives per-character tokens (no spaces), so instead
+ *    keep ~2 characters per "word" (a CJK word is typically two characters);
+ *    a mixed string is treated by its Han share.
+ */
 export declare function summarizeForInsert(text: string, excerptWords?: number, thresholdChars?: number): string;
 /** Props of the notes dock. */
 export interface NotesDockProps {

@@ -19,11 +19,13 @@ import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 // Slot type augmentation: declares `settings.plugin.item` so the settings
 // card can be registered under the `notes` namespace key.
 import type {} from '@deepseek-ai/dsh-client-ui-settings-plugins/client'
+import type { InputTriggerSource } from '@deepseek-ai/dsh-client-ui-input-trigger/client'
 import type { NoteView } from './api.ts'
 import { createNotesApi } from './api.ts'
 import { createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import { NotesDock } from './NotesDock.tsx'
+import { summarizeForInsert } from './NotesDock.tsx'
 import { NotesSettingsCard } from './NotesSettingsCard.tsx'
 import { notesSettingsSpec, type NotesUiSettings } from './settings.ts'
 import { t } from './locales.ts'
@@ -31,7 +33,7 @@ import { NOTES_CSS } from './styles.ts'
 
 /** Required services (sessions + conversation power insert-into-composer; the
  * settings scope + slots drive the plugin card in 设置 → 插件 → 插件配置). */
-export const inject = ['sessions', 'conversation', 'slots', 'settingsScope']
+export const inject = ['sessions', 'conversation', 'slots', 'settingsScope', 'inputTriggers']
 
 /**
  * Insert raw text into the current session's composer draft; falls back to
@@ -70,6 +72,107 @@ function insertTextIntoComposer(ctx: ClientContext, text: string): string {
   return t('notes.item.noSession')
 }
 
+/** Trigger source name for the insert-to-conversation reference chip. */
+export const QUOTE_SOURCE = 'notes-quote'
+
+/**
+ * Register the `@`-trigger reference source that powers the
+ * insert-to-conversation chip. Selecting text and clicking "引入到对话" stores
+ * the FULL text here (keyed by a fresh ref id) and mints the chip directly via
+ * `input.insertReference` (no menu interaction): the chip label is the
+ * head…tail summary, and on submit the codec expands the ref back to the
+ * complete text the model reads.
+ * @param ctx - client root context (must carry `inputTriggers`).
+ */
+export function registerQuoteSource(ctx: ClientContext): {
+  insertText(text: string): string
+  dispose(): void
+} {
+  // Pending full texts, keyed by ref id until the chip is minted (and later
+  // serialized). Survives the source callbacks' lifetime.
+  const pending = new Map<string, string>()
+  let seq = 0
+
+  const inputTriggers = ctx.get('inputTriggers') as {
+    registerSource(source: InputTriggerSource): () => void
+  }
+
+  const source: InputTriggerSource = {
+    trigger: '@',
+    name: QUOTE_SOURCE,
+    showGroupTitle: false,
+    async candidates() {
+      return []
+    },
+    onPick() {
+      return undefined
+    },
+    codec: {
+      clipboardText: (ref) => summarizeForInsert(pending.get(ref) ?? ref),
+      serialize: async (ref) => {
+        const text = pending.get(ref)
+        if (text === undefined) return ref
+        return text
+      },
+    },
+  }
+  const unregister = inputTriggers.registerSource(source)
+
+  /** Mint the chip directly in the composer: store the full text, then call
+   *  `input.insertReference` with a span at the end of the current draft so
+   *  the machine creates the occurrence (the chip shows the summary; submit
+   *  expands it via the source codec to the full text). */
+  const insertText = (text: string): string => {
+    const trimmed = text.trim()
+    if (trimmed === '') return ''
+    const list = ctx.sessions.list.getSnapshot()
+    const current = list.current
+    if (current === undefined) {
+      // No session: fall back to clipboard (same as plain insert).
+      const clipboard = navigator.clipboard
+      if (clipboard !== undefined) void clipboard.writeText(trimmed)
+      return t('notes.item.noSession')
+    }
+    const actx = ctx.sessions.scope(current)
+    if (actx === undefined) return t('notes.item.noSession')
+    try {
+      const input = ctx.conversation.input.for(actx)
+      const snapshot = input.state.getSnapshot()
+      const draft = snapshot.draft ?? ''
+      const start = draft.length
+      pending.clear()
+      const ref = `quote-${++seq}`
+      pending.set(ref, trimmed)
+      const accepted = input.insertReference({
+        source: QUOTE_SOURCE,
+        ref,
+        label: summarizeForInsert(trimmed),
+        appearance: 'file',
+        clipboardText: summarizeForInsert(trimmed),
+      }, {
+        start,
+        end: start,
+        draftRev: snapshot.draftRev,
+      })
+      if (!accepted) {
+        // The machine refused (phase/span guard): fall back to clipboard.
+        const clipboard = navigator.clipboard
+        if (clipboard !== undefined) void clipboard.writeText(trimmed)
+        return t('notes.item.noSession')
+      }
+      return t('notes.selection.inserted')
+    } catch {
+      // Fall back to clipboard on any trigger failure.
+      const clipboard = navigator.clipboard
+      if (clipboard !== undefined) void clipboard.writeText(trimmed)
+      return t('notes.item.noSession')
+    }
+  }
+
+  // Tie disposal to the plugin effect lifecycle.
+  return { insertText, dispose: unregister }
+}
+
 /**
  * Insert a note into the current session's composer draft.
  * Only the note CONTENT is inserted — the title is a list label, not chat
@@ -104,6 +207,14 @@ export function apply(ctx: ClientContext): void {
   }, 'notes: styles')
 
   const api = createNotesApi()
+
+  // Insert-to-conversation reference chip: registers the `@`-trigger source
+  // and returns the programmatic insert that stores the full text and mints
+  // a summary chip in the composer (the model reads the full text on send).
+  const quote = registerQuoteSource(ctx)
+  ctx.effect(() => () => {
+    quote.dispose?.()
+  }, 'notes: quote source')
 
   // The `notes` settings scope mirrors the Host section; the dock reads its UI
   // preferences live and the settings card writes back through it.
@@ -143,7 +254,7 @@ export function apply(ctx: ClientContext): void {
       settingsScope,
       selectionCapture: capture,
       onInsert: (note) => insertIntoComposer(ctx, note),
-      onInsertText: (text) => insertTextIntoComposer(ctx, text),
+      onInsertText: (text) => quote.insertText(text),
     }))
   }
   const syncEnabled = (): void => {
