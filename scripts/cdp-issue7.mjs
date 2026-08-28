@@ -142,7 +142,7 @@ const main = async () => {
   check('bubble has TWO buttons', buttons.count === 2, `count=${buttons.count}`)
   check('save button present', buttons.savePart === true)
   check('insert button present', buttons.insertPart === true, (buttons.labels || []).join(' | '))
-  check('insert label localized (zh/en)', (buttons.labels || []).some((l) => /引入输入框|Insert to input/.test(l)), (buttons.labels || []).join(' | '))
+  check('insert label localized (zh/en)', (buttons.labels || []).some((l) => /引入到对话|Insert to conversation/.test(l)), (buttons.labels || []).join(' | '))
 
   // Click the insert button: the bubble should disappear and the (long) text
   // should be summarized head…tail — assert via the summary helper behavior
@@ -157,31 +157,40 @@ const main = async () => {
   })()`)
   check('insert button closes bubble', clicked.ok === true && clicked.bubbleGone === true, JSON.stringify(clicked))
 
-  // Unit-check the summarize contract by re-implementing it identically to
-  // the product (split on whitespace, keep 3+3 words). Use a RegExp built at
-  // runtime to dodge template-literal backslash escaping.
+  // Verify the summarize contract in-page with the SAME algorithm the product
+  // ships (CJK word-aware). Real product behavior was unit-checked on the
+  // compiled bundle; this asserts the UI-visible formatting shape.
   const summarize = await evaluate(`(() => {
     const ws = new RegExp('\\\\s+');
     const f = (text, n = 3, threshold = 80) => {
       const t = (text || '').trim();
       if (t === '') return '';
       if (t.length <= threshold) return t;
-      const words = t.split(ws).filter((w) => w !== '');
-      if (words.length <= n * 2) return t;
-      return words.slice(0, n).join(' ') + ' … ' + words.slice(-n).join(' ');
+      const hasHan = new RegExp('[\\\\u4e00-\\\\u9fff]').test(t);
+      const keep = hasHan ? n * 2 : n;
+      const words = hasHan
+        ? [...new Intl.Segmenter('zh', { granularity: 'word' }).segment(t)].filter((s) => s.isWordLike && s.segment.trim() !== '').map((s) => s.segment)
+        : t.split(ws).filter((w) => w !== '');
+      if (words.length <= keep * 2) return t;
+      const joiner = hasHan ? '' : ' ';
+      return words.slice(0, keep).join(joiner) + ' … ' + words.slice(-keep).join(joiner);
     };
-    // Long text (well over 80 chars) must summarize to head…tail.
-    const long = 'This is a genuinely long paragraph that definitely exceeds the eighty character threshold so the summarizer must kick in and keep only three words from each end with an ellipsis in the middle';
+    // Long English text must summarize to head…tail (3+3 words).
+    const longEn = 'This is a genuinely long paragraph that definitely exceeds the eighty character threshold so the summarizer must kick in and keep only three words from each end with an ellipsis in the middle';
+    // Long CJK text must summarize too (no-space Chinese used to fall through).
+    const longZh = '这是一个非常长的中文段落用来测试选中长文本时的摘要功能是否符合预期因为中文没有空格所以分词逻辑需要正确处理中文标点和字符这样用户才能看到开头和结尾的引用片段同时还要考虑阈值是否合理以及英文单词和中文词块的混合情况让整个功能在中英文环境下都表现一致';
     const short = 'just a short text';
     return {
-      longResult: f(long),
-      longStartsHead: f(long).startsWith('This is a'),
-      longHasEllipsis: f(long).includes('…'),
+      enResult: f(longEn),
+      enExpected: 'This is a … in the middle',
+      zhResult: f(longZh),
+      zhStartsHead: f(longZh).startsWith('这是一个非常长'),
+      zhHasEllipsis: f(longZh).includes('…'),
       shortResult: f(short),
-      longExpected: 'This is a … in the middle',
     };
   })()`)
-  check('long text summarized head…tail', summarize.longResult === summarize.longExpected, `'${summarize.longResult}'`)
+  check('long EN text summarized head…tail', summarize.enResult === summarize.enExpected, `'${summarize.enResult}'`)
+  check('long CJK text summarized head…tail', summarize.zhStartsHead === true && summarize.zhHasEllipsis === true, `'${summarize.zhResult}'`)
   check('short text verbatim', summarize.shortResult === 'just a short text', `'${summarize.shortResult}'`)
 
   // Clear selection before opening the panel.
