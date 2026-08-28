@@ -27,6 +27,20 @@ import { NotesPanel, type NoteDraft } from './NotesPanel.tsx'
 import type { NotesUiSettings } from './settings.ts'
 import { deriveUiSettings } from './settings.ts'
 
+/** Shorten a long selection for insertion: keep a head and a tail excerpt
+ *  joined by an ellipsis (e.g. the first and last few words), so citing a
+ *  long AI answer stays compact. Short text passes through unchanged. */
+export function summarizeForInsert(text: string, excerptWords = 3, thresholdChars = 80): string {
+  const trimmed = text.trim()
+  if (trimmed === '') return ''
+  if (trimmed.length <= thresholdChars) return trimmed
+  const words = trimmed.split(/\s+/).filter((word) => word !== '')
+  if (words.length <= excerptWords * 2) return trimmed
+  const head = words.slice(0, excerptWords).join(' ')
+  const tail = words.slice(-excerptWords).join(' ')
+  return `${head} … ${tail}`
+}
+
 /** How the dock places the selection bubble. */
 interface SelectionState {
   text: string
@@ -46,6 +60,8 @@ export interface NotesDockProps {
   t: (key: string, params?: Record<string, unknown>) => string
   /** Insert one note into the composer (or copy it when no session is open). Returns a toast copy. */
   onInsert: (note: NoteView) => string
+  /** Insert raw text into the composer (selection "insert to input"). Returns a toast copy. */
+  onInsertText: (text: string) => string
   /** Whether the selection-capture bubble is enabled (host switch). */
   selectionCapture: boolean
   /** The sessions service, so the dock knows the current session for scoping. */
@@ -314,7 +330,7 @@ function NotebookIcon(): ReactElement {
 
 /** The floating notes dock. */
 export function NotesDock(props: NotesDockProps): ReactElement {
-  const { api, t, onInsert, selectionCapture, sessions, settingsScope } = props
+  const { api, t, onInsert, onInsertText, selectionCapture, sessions, settingsScope } = props
   const [open, setOpen] = useState(false)
   const [count, setCount] = useState(0)
   const [seed, setSeed] = useState<NoteDraft | null>(null)
@@ -374,7 +390,7 @@ export function NotesDock(props: NotesDockProps): ReactElement {
 
   const rootRef = useRef<HTMLDivElement | null>(null)
   const dockRef = useRef<HTMLButtonElement | null>(null)
-  const bubbleRef = useRef<HTMLButtonElement | null>(null)
+  const bubbleRef = useRef<HTMLDivElement | null>(null)
   const selectionRef = useRef<SelectionState | null>(null)
   const posRef = useRef<DockPosition | null>(pos)
   const dragRef = useRef<{
@@ -435,6 +451,13 @@ export function NotesDock(props: NotesDockProps): ReactElement {
       global: ui.defaultGlobal || currentSessionId === null,
     })
   }, [openWithDraft, currentSessionId, ui.defaultGlobal])
+
+  /** Insert the selection into the composer: short text verbatim, long text
+   *  summarized as head…tail excerpt. Returns the toast copy from the host. */
+  const insertSelection = useCallback((text: string): string => {
+    setSelection(null)
+    return onInsertText(summarizeForInsert(text))
+  }, [onInsertText])
 
   // ---- dock dragging ----
   // A press without travel toggles the panel through the button's onClick
@@ -671,19 +694,35 @@ export function NotesDock(props: NotesDockProps): ReactElement {
 
       {selection !== null
         ? (
-          <button
+          <div
             ref={bubbleRef}
-            type="button"
             className="dshn-selection"
             style={{ left: selection.x, top: selection.y }}
-            onClick={() => { saveSelection(selection.text) }}
-            data-dsh-part="notes-selection-save"
+            data-dsh-part="notes-selection"
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style={{ verticalAlign: '-1px', marginRight: 5 }} aria-hidden="true">
-              <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-            </svg>
-            {t('notes.selection.save')}
-          </button>
+            <button
+              type="button"
+              className="dshn-selection-btn"
+              onClick={() => { saveSelection(selection.text) }}
+              data-dsh-part="notes-selection-save"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+              </svg>
+              {t('notes.selection.save')}
+            </button>
+            <button
+              type="button"
+              className="dshn-selection-btn"
+              onClick={() => { insertSelection(selection.text) }}
+              data-dsh-part="notes-selection-insert"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" transform="rotate(45 12 12)" />
+              </svg>
+              {t('notes.selection.insert')}
+            </button>
+          </div>
         )
         : null}
     </div>
