@@ -45,6 +45,10 @@ export interface NotesPanelProps {
   seed?: NoteDraft | null
   /** Called after the seed draft has been consumed. */
   onSeedConsumed?: () => void
+  /** Register the panel's flush-then-close so the dock's own affordances (the
+   *  dock toggle and ESC) persist an in-progress draft too. Pass `null` to
+   *  unregister. */
+  onRegisterClose?: (requestClose: (() => void) | null) => void
 }
 
 const SEARCH_DEBOUNCE_MS = 300
@@ -72,7 +76,7 @@ function loadPanelWidth(): number {
 
 /** The notes panel. */
 export function NotesPanel(props: NotesPanelProps): ReactElement {
-  const { api, t, onInsert, onClose, onChanged, seed, onSeedConsumed } = props
+  const { api, t, onInsert, onClose, onChanged, seed, onSeedConsumed, onRegisterClose } = props
   const sessionId = props.sessionId
   const [notes, setNotes] = useState<NoteView[] | null>(null)
   const [count, setCount] = useState(0)
@@ -200,6 +204,40 @@ export function NotesPanel(props: NotesPanelProps): ReactElement {
   useEffect(() => {
     editingRef.current = editing
   }, [editing])
+
+  /** Close the panel, persisting an in-progress draft first — a tap outside
+   *  the panel (or the dock's own toggle) must never silently discard work.
+   *  Blank drafts are dropped by persistDraft itself. */
+  const closeWithDraft = useCallback((): void => {
+    const draft = editingRef.current
+    if (draft !== null && draft.content.trim() !== '') {
+      void persistDraft(draft, props.sessionId ?? null)
+    }
+    onClose()
+  }, [persistDraft, onClose, props.sessionId])
+
+  // The dock routes its own close affordances (the dock toggle, ESC) through
+  // this same flush-then-close path.
+  useEffect(() => {
+    onRegisterClose?.(closeWithDraft)
+    return () => { onRegisterClose?.(null) }
+  }, [onRegisterClose, closeWithDraft])
+
+  // Dismiss on an outside pointerdown — non-modal, no scrim and no scroll
+  // lock, so the app behind stays usable. Anything inside the notes UI is
+  // excluded: the panel itself, the dock button (which owns its own toggle —
+  // closing here would double-toggle and immediately reopen it) and the
+  // selection bubble.
+  useEffect(() => {
+    const onPointerDown = (event: PointerEvent): void => {
+      const target = event.target
+      if (!(target instanceof Element)) return
+      if (target.closest('[data-dsh-notes-root]') !== null) return
+      closeWithDraft()
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    return () => { document.removeEventListener('pointerdown', onPointerDown) }
+  }, [closeWithDraft])
 
   // Session switch while the panel is open: if the editor holds a draft,
   // auto-save it against the session being LEFT, then fall back to the list
@@ -470,8 +508,9 @@ export function NotesPanel(props: NotesPanelProps): ReactElement {
         <button
           type="button"
           className="dshn-icon-btn"
-          aria-label={t('notes.panel.title')}
-          onClick={onClose}
+          data-dsh-part="notes-panel-close"
+          aria-label={t('notes.panel.close')}
+          onClick={closeWithDraft}
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
             <path d="M3 3L11 11M11 3L3 11" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
@@ -641,6 +680,16 @@ export function NotesPanel(props: NotesPanelProps): ReactElement {
             {t('notes.footer.cnb')}
           </a>
         </span>
+        {/* Touch-only (see the `pointer: coarse` block in styles.ts): a bottom
+            dismissal that sits in the thumb zone on tall phones. */}
+        <button
+          type="button"
+          className="dshn-footer-close"
+          data-dsh-part="notes-footer-close"
+          onClick={closeWithDraft}
+        >
+          {t('notes.panel.close')}
+        </button>
       </div>
       {toast !== null ? <div className="dshn-toast" role="status">{toast}</div> : null}
     </section>

@@ -373,6 +373,20 @@ export function NotesDock(props: NotesDockProps): ReactElement {
   const [pos, setPos] = useState<DockPosition | null>(() => loadDockPosition())
   const [dragging, setDragging] = useState(false)
 
+  // Closing the panel routes through the panel itself whenever it is mounted,
+  // so an in-progress editor draft is persisted before it unmounts. The raw
+  // setter is what the panel calls back into — re-entering the registered path
+  // from there would recurse.
+  const panelCloseRef = useRef<(() => void) | null>(null)
+  const handleClose = useCallback((): void => { setOpen(false) }, [])
+  const registerPanelClose = useCallback((requestClose: (() => void) | null): void => {
+    panelCloseRef.current = requestClose
+  }, [])
+  const closePanel = useCallback((): void => {
+    if (panelCloseRef.current !== null) panelCloseRef.current()
+    else setOpen(false)
+  }, [])
+
   // UI preferences from the settings namespace, live (the settings card and
   // the dock share this scope, so a change in 设置 → 插件 applies instantly).
   const ui = useSyncExternalStore<NotesUiSettings>(
@@ -456,15 +470,16 @@ export function NotesDock(props: NotesDockProps): ReactElement {
     refreshCount()
   }, [refreshCount])
 
-  // ESC closes the panel; opening the panel re-reads the count.
+  // ESC closes the panel; opening the panel re-reads the count. An outside
+  // pointerdown is handled by the panel itself (see NotesPanel).
   useEffect(() => {
     if (!open) return
     const onKey = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') setOpen(false)
+      if (event.key === 'Escape') closePanel()
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [open])
+  }, [open, closePanel])
 
   const openWithDraft = useCallback((draft: NoteDraft): void => {
     setSeed(draft)
@@ -563,9 +578,13 @@ export function NotesDock(props: NotesDockProps): ReactElement {
       clickSuppressed.current = false
       return
     }
-    const next = !open
-    setOpen(next)
-    if (next) refreshCount()
+    if (open) {
+      // Let the panel persist an in-progress draft before it unmounts.
+      closePanel()
+      return
+    }
+    setOpen(true)
+    refreshCount()
   }
 
   // ---- text-selection capture (scroll-following bubble) ----
@@ -721,7 +740,8 @@ export function NotesDock(props: NotesDockProps): ReactElement {
             sessionId={currentSessionId}
             defaultGlobal={ui.defaultGlobal}
             onInsert={onInsert}
-            onClose={() => { setOpen(false) }}
+            onClose={handleClose}
+            onRegisterClose={registerPanelClose}
             onChanged={setCount}
             seed={seed}
             onSeedConsumed={() => { setSeed(null) }}

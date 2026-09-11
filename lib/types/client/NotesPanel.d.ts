@@ -40,6 +40,10 @@ export interface NotesPanelProps {
     seed?: NoteDraft | null;
     /** Called after the seed draft has been consumed. */
     onSeedConsumed?: () => void;
+    /** Register the panel's flush-then-close so the dock's own affordances (the
+     *  dock toggle and ESC) persist an in-progress draft too. Pass `null` to
+     *  unregister. */
+    onRegisterClose?: (requestClose: (() => void) | null) => void;
 }
 /** The notes panel. */
 export declare function NotesPanel(props: NotesPanelProps): ReactElement;
