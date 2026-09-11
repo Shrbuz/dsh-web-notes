@@ -9,6 +9,8 @@ Floating notes for the [DeepSeek Harness](https://github.com/deepseek-ai/DeepSee
 - **Floating dock** — an animated notebook icon on the right edge of the chat window, one click away at all times. Drag it anywhere (the position persists); it honours `prefers-reduced-motion`.
 - **Configurable placement & size** — in **Settings → Plugins → Plugin Configuration** the dock can be set to **floating** (draggable) or **fixed** (pinned to the chat window's top-right corner, not draggable), and the button size to **Small / Regular / Large**. Changes apply live — no reload.
 - **Notes panel** — slide-over panel with search, a note list (title, preview, tags, relative time), and per-note actions.
+- **Dismissing the panel** — the X, ESC, the dock button, a click outside the panel, and (on touch) a bottom **Close** button all dismiss it. Every dismissal **persists an in-progress draft** instead of losing it; the editor's **Cancel** is the one explicit discard.
+- **Touch / coarse-pointer ready** — on touch devices every control grows to at least a 44px target, the per-note actions become a permanent tappable row instead of hover-only pills (which are unreachable without a hover), the resize gutter widens, and a bottom **Close** button lands in the thumb zone. Fine-pointer desktops keep the compact layout unchanged.
 - **Insert into the composer** — one click places the note's content into the current session's input box (the title stays a list label), ready to review and send. When no session is open, the content is copied to the clipboard instead.
 - **Save any selection** — select text anywhere on the page (e.g. part of an AI answer) and a floating **"Save as note"** button appears; one click captures it, with the first line as the title. The bubble **follows the selection while you scroll** and only disappears when the selection collapses, you click elsewhere on the page, or you switch windows.
 - **Markdown preview** — the note editor **auto-detects Markdown** (headings, lists, code fences, quotes, tables, links, bold/italic…). Plain notes stay a plain editor; once MD syntax is present an **Edit / Preview** toggle appears, and the preview renders full GFM (sanitized with DOMPurify — raw HTML/scripts never execute).
@@ -108,7 +110,15 @@ Notes may contain credentials, tokens, or other sensitive values. They are store
 pnpm install
 pnpm run build        # tsc -b (types) + tsdown (lib/index.js + lib/client.js)
 node scripts/smoke-host.mjs   # standalone host-logic smoke test (no dsh app needed)
+
+# client UI verification that needs no dsh app (see below)
+pnpm exec tsdown --config tsdown.harness.config.ts
+node scripts/verify-touch.mjs
 ```
+
+`scripts/verify-touch.mjs` drives `scripts/harness/entry.tsx` — a standalone harness that renders the REAL `NotesDock` component tree with the REAL `NOTES_CSS` against mocked host contracts (notes API, sessions store, settings scope) — in headless Chrome over CDP. It asserts the coarse-pointer adaptation and every dismissal path, and writes `.logs/touch-desktop.png` / `.logs/touch-coarse.png` for visual inspection.
+
+> The `scripts/cdp-*.mjs` / `screenshot.mjs` probes drive the *running* GUI, so they need that instance's browser auth. dsh ≥ 0.1.5 gates `/` behind a per-process launch token (minted into a signed cookie), so a fresh headless browser gets `401 dsh web authentication required` and never boots the app — open the token URL printed by `dsh web` in the same browser profile, or reach for the harness for client-only checks.
 
 Architecture:
 

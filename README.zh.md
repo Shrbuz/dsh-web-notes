@@ -9,6 +9,8 @@
 - **悬浮图标** — 聊天窗口右侧的动画笔记本图标，随时可点；可拖拽到任意位置（自动保存），遵循系统「减弱动态效果」设置。
 - **入口与大小可配置** — 在 **设置 → 插件 → 插件配置** 中可选择**悬浮（可拖动）**或**固定（钉在对话窗口右上角，不可拖动）**两种快捷入口，按钮大小可选**较小 / 常规 / 较大**。改动即时生效，无需刷新。
 - **笔记面板** — 滑出式面板：搜索、笔记列表（标题、预览、标签、相对时间）、每条笔记的操作按钮。
+- **关闭面板** — X、ESC、dock 按钮、点击面板外部、以及触屏下的底部「关闭」按钮都能关闭面板；**任何关闭方式都会先保存正在编辑的草稿**而不是丢弃，编辑器里的「取消」是唯一的显式丢弃入口。
+- **触屏/粗指针适配** — 触屏设备上所有控件放大到至少 44px 触控目标、每条笔记的操作按钮由「仅悬停显示」改为常驻可点行（触屏没有 hover，原本根本点不到）、拖拽调宽条加宽，并在拇指区提供底部「关闭」按钮；精确指针（鼠标）桌面端保持原有紧凑布局不变。
 - **引入对话框** — 一键把笔记内容放入当前会话的输入框（标题保留为列表标签，不混入正文），检查后回车即可发送；没有打开会话时自动退化为复制到剪贴板。
 - **选中即存** — 在页面上选中任意文本（比如 AI 回答中的一段），旁边会出现悬浮的「存为笔记」按钮，一键保存，首行自动作为标题。气泡会**随滚动跟随选中内容**，只有当选中取消、点击页面其他位置或切换窗口时才消失。
 - **Markdown 预览** — 笔记编辑器**自动识别 Markdown**（标题、列表、代码块、引用、表格、链接、加粗/斜体等）：普通笔记仍是纯文本框；一旦出现 MD 语法即显示「编辑 / 预览」切换按钮，预览按完整 GFM 渲染（DOMPurify 消毒，原始 HTML/脚本不会执行）。
@@ -108,7 +110,15 @@ notes:
 pnpm install
 pnpm run build        # tsc -b（类型）+ tsdown（lib/index.js + lib/client.js）
 node scripts/smoke-host.mjs   # 宿主逻辑独立冒烟测试（无需 dsh 应用）
+
+# 客户端 UI 验证，无需 dsh 应用（见下）
+pnpm exec tsdown --config tsdown.harness.config.ts
+node scripts/verify-touch.mjs
 ```
+
+`scripts/verify-touch.mjs` 驱动 `scripts/harness/entry.tsx`：一个独立 harness，用**真实的 `NotesDock` 组件树 + 真实的 `NOTES_CSS`** 配上 mock 的宿主契约（笔记 API、会话 store、settings scope），在无头 Chrome 中经 CDP 断言粗指针适配与各条关闭路径，并输出 `.logs/touch-desktop.png` / `.logs/touch-coarse.png` 供肉眼检查。
+
+> `scripts/cdp-*.mjs` 与 `screenshot.mjs` 这些探针驱动的是**正在运行的 GUI**，因此需要该实例的浏览器认证：dsh ≥ 0.1.5 把 `/` 放在进程级 launch token（换取签名 cookie）之后，全新的无头浏览器会拿到 `401 dsh web authentication required`，应用根本不会启动。请在同一个浏览器 profile 中打开 `dsh web` 启动时打印的带 token URL，或改用上面的 harness 做纯客户端检查。
 
 架构：
 

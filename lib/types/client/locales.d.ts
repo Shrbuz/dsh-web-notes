@@ -13,6 +13,7 @@ export declare const zh: {
     readonly 'notes.dock.tooltip': "笔记";
     readonly 'notes.panel.title': "笔记";
     readonly 'notes.panel.new': "新建";
+    readonly 'notes.panel.close': "关闭";
     readonly 'notes.panel.searchPlaceholder': "搜索标题、内容或标签…";
     readonly 'notes.panel.empty': "还没有笔记。点击「新建」记录命令、凭证或参数值，或选中任意文本一键保存。";
     readonly 'notes.panel.emptyTitle': "随手记录，随时调用";
@@ -79,6 +80,7 @@ export declare const en: {
     readonly 'notes.dock.tooltip': "Notes";
     readonly 'notes.panel.title': "Notes";
     readonly 'notes.panel.new': "New";
+    readonly 'notes.panel.close': "Close";
     readonly 'notes.panel.searchPlaceholder': "Search title, content or tags…";
     readonly 'notes.panel.empty': "No notes yet. Click “New” to capture commands, credentials or parameter values, or select any text to save it with one click.";
     readonly 'notes.panel.emptyTitle': "Jot it down, use it anytime";

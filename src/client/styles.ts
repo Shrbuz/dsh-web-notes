@@ -1199,6 +1199,13 @@ body {
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--dshn-primary) 40%, transparent);
 }
 
+/* Bottom close affordance: coarse pointers only (see the touch block at the
+   end of this sheet) — a thumb-reach dismissal for tall phones. Desktop has
+   the header X, ESC and click-outside and never sees this button. */
+.dshn-footer-close {
+  display: none;
+}
+
 /* ---- toast ---- */
 .dshn-toast {
   position: absolute;
@@ -1485,6 +1492,136 @@ body {
 
   .dshn-dock-inner::after {
     display: none;
+  }
+}
+
+/* ---- touch / coarse-pointer adaptation ---------------------------------
+   Phones and tablets: interactive controls grow to the 44px touch-target
+   recommendation, hover-only affordances become permanent (there is no hover
+   on touch, which left the per-note action pills effectively unreachable),
+   and the resize gutter widens. Fine-pointer desktops are untouched —
+   everything here is scoped to the pointer: coarse media feature. */
+@media (pointer: coarse) {
+  /* Header controls: the close X and the editor's back button. */
+  .dshn-icon-btn,
+  .dshn-editor-back {
+    width: 44px;
+    height: 44px;
+  }
+
+  /* The 5px resize gutter is untappable with a finger. */
+  .dshn-panel-resize {
+    width: 14px;
+  }
+
+  /* 16px keeps iOS Safari from zooming the viewport when a field is focused.
+     Single-line inputs get a full touch height; the editor textarea keeps its
+     own 160px floor (it is the one field that should stay tall). */
+  .dshn-search,
+  .dshn-input {
+    font-size: 16px;
+  }
+
+  .dshn-search,
+  .dshn-input:not(.dshn-textarea) {
+    min-height: 44px;
+  }
+
+  .dshn-new-btn,
+  .dshn-btn,
+  .dshn-empty-new,
+  .dshn-scope,
+  .dshn-md-btn,
+  .dshn-selection-btn {
+    min-height: 44px;
+  }
+
+  .dshn-check {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Secondary footer links stay one notch below a primary action — still well
+     above the 24px minimum, without bloating the footer. */
+  .dshn-footer-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+  }
+
+  /* Bottom close: thumb reach on tall phones. */
+  .dshn-footer-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 44px;
+    border: 1px solid var(--dshn-border);
+    border-radius: 8px;
+    background: var(--dshn-bg-overlay);
+    color: var(--dshn-text-2);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .dshn-footer-close:active {
+    background: var(--dshn-bg-hover);
+    color: var(--dshn-text-1);
+  }
+
+  .dshn-footer-close:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--dshn-primary) 40%, transparent);
+  }
+
+  /* Note cards: the hover-only action pills become a permanent action row at
+     the card's foot. The card turns into a column flex here so the row can be
+     ordered after the meta/tags instead of floating over the title. */
+  .dshn-item {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .dshn-item-actions {
+    position: static;
+    order: 10;
+    margin-top: 8px;
+    opacity: 1;
+    transform: none;
+    flex-wrap: wrap;
+  }
+
+  .dshn-action {
+    flex: 1 1 auto;
+    justify-content: center;
+    min-height: 44px;
+  }
+
+  /* No floating pills to reserve room for. */
+  .dshn-item-title {
+    padding-right: 0;
+  }
+}
+
+/* ---- narrow screens ----------------------------------------------------
+   The panel already clamps its width to min(panel-width, 100vw - 24px). On a
+   phone that leftover strip IS the tap-outside dismissal area, so the panel is
+   deliberately not widened to 100vw — only the gutters tighten. */
+@media (max-width: 420px) {
+  .dshn-panel-header,
+  .dshn-toolbar,
+  .dshn-scopes,
+  .dshn-editor,
+  .dshn-footer {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .dshn-list {
+    padding-left: 8px;
+    padding-right: 8px;
   }
 }
 `
